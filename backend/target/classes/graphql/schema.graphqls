@@ -1,0 +1,49 @@
+type Query {
+  health: String!
+  systemStatus: SystemStatus!
+  me: User
+  bookings: [BookingSummary!]!
+  booking(id: ID!): BookingSummary
+}
+
+type Mutation {
+  register(name: String!, email: String!, password: String!): AuthPayload!
+  login(email: String!, password: String!): AuthPayload!
+  createBooking(input: CreateBookingInput!): BookingSummary!
+  cancelBooking(id: ID!): BookingSummary
+}
+
+type AuthPayload {
+  token: String!
+  user: User!
+}
+
+input CreateBookingInput {
+  userId: ID
+  pickupAddress: String!
+  dropAddress: String!
+  fare: Float!
+}
+
+type SystemStatus {
+  status: String!
+  service: String!
+  version: String!
+}
+
+type User {
+  id: ID!
+  name: String!
+  email: String!
+  role: String!
+}
+
+type BookingSummary {
+  id: ID!
+  userId: ID!
+  pickupAddress: String!
+  dropAddress: String!
+  status: String!
+  fare: Float!
+  createdAt: String
+}

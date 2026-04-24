@@ -1,0 +1,11 @@
+**/node_modules
+**/.next
+**/target
+.git
+.gitignore
+Dockerfile
+docker-compose.yml
+README.md
+*.log
+*.tmp
+.DS_Store
