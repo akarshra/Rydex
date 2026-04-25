@@ -128,11 +128,11 @@ export default function AuthModal({ open, onClose }: Props) {
               </div>
 
               <button
-                onClick={handleLogin}
+                onClick={() => signIn("google")}
                 className="flex h-11 w-full items-center justify-center gap-3 rounded-xl border border-white/10 bg-white/5 text-sm font-semibold text-white transition hover:bg-white hover:text-black"
               >
                 <Image src="/google.png" alt="Login" width={20} height={20} />
-                Continue with Email
+                Continue with Google
               </button>
 
               <div className="my-6 flex items-center gap-4">

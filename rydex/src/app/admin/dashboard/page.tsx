@@ -74,7 +74,7 @@ export default function AdminDashboard() {
 
   if (loading || !stats) {
     return (
-      <div className="min-h-screen grid place-items-center text-gray-400">
+      <div className="min-h-screen grid place-items-center text-slate-400">
         Loading admin dashboard...
       </div>
     );
@@ -307,10 +307,10 @@ function TabButton({ active, onClick, children, icon, count }: any) {
       className={`relative flex items-center gap-2 px-5 py-2.5 rounded-2xl text-sm font-semibold transition-all duration-200 select-none
         ${active
           ? "bg-neutral-950 text-white shadow-lg shadow-black/20"
-          : "text-gray-500 hover:bg-gray-100 hover:text-gray-800"
+          : "text-gray-500 hover:bg-gray-100 hover:text-slate-200"
         }`}
     >
-      <span className={`flex items-center ${active ? "text-white" : "text-gray-400"}`}>
+      <span className={`flex items-center ${active ? "text-white" : "text-slate-400"}`}>
         {icon}
       </span>
 
@@ -318,10 +318,10 @@ function TabButton({ active, onClick, children, icon, count }: any) {
 
       <span className={`min-w-[22px] h-5 px-1.5 text-[11px] font-bold rounded-full flex items-center justify-center transition-all
         ${active
-          ? "bg-white text-black"
+          ? "bg-slate-200 text-slate-900"
           : count > 0
-          ? "bg-red-500 text-white"
-          : "bg-gray-200 text-gray-400"
+          ? "bg-rose-500/100 text-white"
+          : "bg-gray-200 text-slate-400"
         }`}
       >
         {count}
@@ -331,16 +331,16 @@ function TabButton({ active, onClick, children, icon, count }: any) {
 }
 
 const KYC_STATUS: Record<string, { label: string; pill: string; dot: string }> = {
-  pending:     { label: "Pending",     pill: "bg-amber-50 text-amber-800 border border-amber-200",   dot: "bg-amber-500" },
-  in_progress: { label: "In Progress", pill: "bg-blue-50  text-blue-800  border border-blue-200",    dot: "bg-blue-500" },
-  completed:   { label: "Completed",   pill: "bg-green-50 text-green-800 border border-green-200",   dot: "bg-green-500" },
+  pending:     { label: "Pending",     pill: "bg-amber-500/10 text-amber-400 border border-amber-200",   dot: "bg-amber-500/100" },
+  in_progress: { label: "In Progress", pill: "bg-sky-500/10  text-sky-400  border border-blue-200",    dot: "bg-sky-500/100" },
+  completed:   { label: "Completed",   pill: "bg-emerald-500/10 text-green-800 border border-green-200",   dot: "bg-emerald-500/100" },
 };
 
 const AVATAR_COLORS = [
-  "bg-purple-100 text-purple-800",
-  "bg-teal-100 text-teal-800",
-  "bg-blue-100 text-blue-800",
-  "bg-pink-100 text-pink-800",
+  "bg-purple-500/100/20 text-purple-400",
+  "bg-teal-500/20 text-teal-400",
+  "bg-sky-500/20 text-sky-400",
+  "bg-pink-500/20 text-pink-400",
 ];
 
 function ContentList({ data, type }: any) {
@@ -358,13 +358,13 @@ function ContentList({ data, type }: any) {
   if (data.length === 0) {
     return (
       <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}
-        className="bg-white rounded-2xl py-16 text-center border border-dashed border-gray-200 shadow-sm"
+        className="bg-slate-900/40 rounded-2xl py-16 text-center border border-dashed border-white/10 shadow-sm"
       >
-        <div className="w-12 h-12 rounded-xl bg-green-50 flex items-center justify-center mx-auto mb-4">
-          <CheckCircle2 size={22} className="text-green-500" />
+        <div className="w-12 h-12 rounded-xl bg-emerald-500/10 flex items-center justify-center mx-auto mb-4">
+          <CheckCircle2 size={22} className="text-emerald-400" />
         </div>
-        <p className="font-bold text-gray-800 text-base">All caught up!</p>
-        <p className="text-sm text-gray-400 mt-1">No pending items right now.</p>
+        <p className="font-bold text-slate-200 text-base">All caught up!</p>
+        <p className="text-sm text-slate-400 mt-1">No pending items right now.</p>
       </motion.div>
     );
   }
@@ -372,10 +372,10 @@ function ContentList({ data, type }: any) {
   return (
     <div className="space-y-3">
       <div className="flex items-center justify-between px-1 mb-1">
-        <p className="text-xs font-semibold uppercase tracking-widest text-gray-400">
+        <p className="text-xs font-semibold uppercase tracking-widest text-slate-400">
           {type === "kyc" ? "Video KYC Queue" : type === "vendor" ? "Vendor Review Queue" : "Vehicle Review Queue"}
         </p>
-        <p className="text-xs text-gray-400">{data.length} item{data.length > 1 ? "s" : ""}</p>
+        <p className="text-xs text-slate-400">{data.length} item{data.length > 1 ? "s" : ""}</p>
       </div>
 
       {data.map((item: any, i: number) => {
@@ -391,7 +391,7 @@ function ContentList({ data, type }: any) {
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: i * 0.05 }}
             whileHover={{ y: -3, boxShadow: "0 8px 30px rgba(0,0,0,0.08)" }}
-            className="bg-white border border-gray-100 rounded-2xl px-5 py-4 flex items-center justify-between gap-4 shadow-sm transition-shadow"
+            className="bg-slate-900/40 border border-white/10 rounded-2xl px-5 py-4 flex items-center justify-between gap-4 shadow-sm transition-shadow"
           >
             {/* Avatar + Info */}
             <div className="flex items-center gap-3 min-w-0">
@@ -399,8 +399,8 @@ function ContentList({ data, type }: any) {
                 {initials}
               </div>
               <div className="min-w-0">
-                <p className="font-bold text-sm text-gray-900 truncate">{name}</p>
-                <p className="text-xs text-gray-400 truncate">{email}</p>
+                <p className="font-bold text-sm text-slate-200 truncate">{name}</p>
+                <p className="text-xs text-slate-400 truncate">{email}</p>
                 {type === "kyc" && (
                   <span className={`mt-1.5 inline-flex items-center gap-1.5 text-[11px] font-semibold px-2.5 py-0.5 rounded-full ${s.pill}`}>
                     <span className={`w-1.5 h-1.5 rounded-full ${s.dot}`} />
@@ -451,23 +451,23 @@ const KPI_CONFIG: Record<string, {
   iconBg: string; iconColor: string; trendBg: string; trendText: string; cardHover: string;
 }> = {
   totalVendors: {
-    iconBg: "bg-purple-50", iconColor: "text-purple-700",
-    trendBg: "bg-purple-50", trendText: "text-purple-800",
+    iconBg: "bg-purple-500/10", iconColor: "text-purple-400",
+    trendBg: "bg-purple-500/10", trendText: "text-purple-300",
     cardHover: "hover:shadow-purple-100/60",
   },
   approved: {
-    iconBg: "bg-blue-50", iconColor: "text-blue-800",
-    trendBg: "bg-green-50", trendText: "text-green-800",
+    iconBg: "bg-sky-500/10", iconColor: "text-sky-400",
+    trendBg: "bg-emerald-500/10", trendText: "text-green-800",
     cardHover: "hover:shadow-blue-100/60",
   },
   pending: {
-    iconBg: "bg-amber-50", iconColor: "text-amber-800",
+    iconBg: "bg-amber-500/10", iconColor: "text-amber-400",
     trendBg: "bg-gray-100", trendText: "text-gray-600",
     cardHover: "hover:shadow-amber-100/60",
   },
   rejected: {
-    iconBg: "bg-red-50", iconColor: "text-red-800",
-    trendBg: "bg-red-50", trendText: "text-red-800",
+    iconBg: "bg-rose-500/10", iconColor: "text-rose-400",
+    trendBg: "bg-rose-500/10", trendText: "text-rose-400",
     cardHover: "hover:shadow-red-100/60",
   },
 };
@@ -497,15 +497,15 @@ function Kpi({
     <Minus size={11} />;
 
   const trendColor =
-    trendDir === "up"   ? "bg-green-50 text-green-800" :
-    trendDir === "down" ? "bg-red-50 text-red-800"     :
-    "bg-gray-100 text-gray-600";
+    trendDir === "up"   ? "bg-emerald-500/10 text-green-800" :
+    trendDir === "down" ? "bg-rose-500/10 text-rose-400"     :
+    "bg-slate-800/50 text-slate-400";
 
   return (
     <motion.div
       whileHover={{ y: -5, boxShadow: "0 20px 48px rgba(0,0,0,0.10)" }}
       transition={{ type: "spring", stiffness: 300, damping: 20 }}
-      className={`bg-white rounded-2xl p-5 border border-gray-100 shadow-sm
+      className={`bg-slate-900/40 rounded-2xl p-5 border border-white/10 shadow-sm
         cursor-default relative overflow-hidden group ${cfg.cardHover}`}
     >
       {/* subtle tinted bg on hover */}
@@ -533,13 +533,13 @@ function Kpi({
         </div>
 
         {/* Label */}
-        <p className="text-xs font-semibold uppercase tracking-widest text-gray-400 mb-1">
+        <p className="text-xs font-semibold uppercase tracking-widest text-slate-400 mb-1">
           {label}
         </p>
 
         {/* Value — count-up animation */}
         <motion.p
-          className="text-3xl font-extrabold text-gray-950 leading-tight"
+          className="text-3xl font-extrabold text-white leading-tight"
           initial={{ opacity: 0, y: 8 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.4, delay: 0.1 }}
@@ -550,8 +550,8 @@ function Kpi({
         {/* Footer */}
         {sub && (
           <div className="flex items-center justify-between mt-3 pt-3
-            border-t border-gray-100">
-            <p className="text-[11px] text-gray-400">{sub}</p>
+            border-t border-white/10">
+            <p className="text-[11px] text-slate-400">{sub}</p>
             <Clock size={11} className="text-gray-300" />
           </div>
         )}

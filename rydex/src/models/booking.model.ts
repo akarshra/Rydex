@@ -16,6 +16,23 @@ export type PaymentStatus =
   | "cash"
   | "failed";
 
+export type DispatchTier = "standard" | "priority" | "wait_save";
+
+export interface IBookingStop {
+  address: string;
+  location: {
+    type: "Point";
+    coordinates: [number, number];
+  };
+}
+
+export interface IFareSplit {
+  user: Types.ObjectId;
+  amount: number;
+  status: "pending" | "paid";
+  paidAt?: Date;
+}
+
 export interface IBooking extends Document {
   user: Types.ObjectId;
   driver: Types.ObjectId;
@@ -34,6 +51,8 @@ export interface IBooking extends Document {
     coordinates: [number, number];
   };
 
+  stops: IBookingStop[];
+
   fare: number;
 
   status: BookingStatus;
@@ -43,14 +62,28 @@ export interface IBooking extends Document {
 
   userMobileNumber: string;
   driverMobileNumber: string;
-  adminCommission: number
-partnerAmount: number
-    pickupOtp: string
+  adminCommission: number;
+  partnerAmount: number;
 
-pickupOtpExpires: Date
- dropOtp: string
+  pickupOtp: string;
+  pickupOtpExpires: Date;
+  dropOtp: string;
+  dropOtpExpires: Date;
 
-dropOtpExpires: Date
+  /* Premium fields */
+  dispatchTier: DispatchTier;
+  ridePreferencesSnapshot?: {
+    temperature?: string;
+    musicGenre?: string;
+    quietRide?: boolean;
+    luggageAssistance?: boolean;
+    childSeat?: boolean;
+    petFriendly?: boolean;
+  };
+  fareSplit?: IFareSplit[];
+  securePin?: string;
+  pinVerified: boolean;
+
   createdAt: Date;
   updatedAt: Date;
   promoCode?: string;
@@ -89,7 +122,20 @@ const BookingSchema = new Schema<IBooking>(
         required: true,
       },
     },
-    
+
+    stops: [
+      {
+        address: { type: String, required: true },
+        location: {
+          type: {
+            type: String,
+            enum: ["Point"],
+            default: "Point",
+          },
+          coordinates: { type: [Number], required: true },
+        },
+      },
+    ],
 
     fare: { type: Number, required: true },
 
@@ -98,15 +144,15 @@ const BookingSchema = new Schema<IBooking>(
       default: "requested",
       index: true,
     },
-adminCommission: {
-  type: Number,
-  default: 0,
-},
+    adminCommission: {
+      type: Number,
+      default: 0,
+    },
 
-partnerAmount: {
-  type: Number,
-  default: 0,
-},
+    partnerAmount: {
+      type: Number,
+      default: 0,
+    },
     paymentStatus: {
       type: String,
       default: "pending",
@@ -115,31 +161,60 @@ partnerAmount: {
     paymentDeadline: Date,
 
     pickupOtp: {
-  type: String,
-},
+      type: String,
+    },
 
-pickupOtpExpires: {
-  type: Date,
-},
-   dropOtp: {
-  type: String,
-},
+    pickupOtpExpires: {
+      type: Date,
+    },
+    dropOtp: {
+      type: String,
+    },
 
-dropOtpExpires: {
-  type: Date,
-},
+    dropOtpExpires: {
+      type: Date,
+    },
 
-    userMobileNumber: { 
-      type: String, 
+    userMobileNumber: {
+      type: String,
       required: true,
       trim: true,
     },
 
-    driverMobileNumber: { 
-      type: String, 
+    driverMobileNumber: {
+      type: String,
       required: true,
       trim: true,
     },
+
+    /* Premium fields */
+    dispatchTier: {
+      type: String,
+      enum: ["standard", "priority", "wait_save"],
+      default: "standard",
+    },
+
+    ridePreferencesSnapshot: {
+      temperature: { type: String },
+      musicGenre: { type: String },
+      quietRide: { type: Boolean },
+      luggageAssistance: { type: Boolean },
+      childSeat: { type: Boolean },
+      petFriendly: { type: Boolean },
+    },
+
+    fareSplit: [
+      {
+        user: { type: Schema.Types.ObjectId, ref: "User" },
+        amount: { type: Number, required: true },
+        status: { type: String, enum: ["pending", "paid"], default: "pending" },
+        paidAt: { type: Date },
+      },
+    ],
+
+    securePin: { type: String },
+    pinVerified: { type: Boolean, default: false },
+
     promoCode: { type: String },
     discountAmount: { type: Number, default: 0 },
   },

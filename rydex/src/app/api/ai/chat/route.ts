@@ -30,7 +30,11 @@ export async function POST(req: Request) {
       model: 'gemini-embedding-2',
       contents: message,
     });
-    const queryEmbedding = embedResponse.embeddings[0].values;
+    const queryEmbedding = embedResponse.embeddings?.[0]?.values;
+
+    if (!queryEmbedding) {
+       return NextResponse.json({ error: "Failed to generate embeddings" }, { status: 500 });
+    }
 
     // 2. Calculate similarity for each FAQ in the knowledge base
     const scoredDocs = knowledgeBase.map((doc: any) => ({
@@ -44,7 +48,7 @@ export async function POST(req: Request) {
 
     // 4. Construct the prompt for the LLM
     const contextStr = topDocs.map(doc => `Q: ${doc.question}\nA: ${doc.answer}`).join("\n\n");
-    
+
     const systemPrompt = `You are a helpful customer support AI for Rydex, a premium ride-sharing platform.
 Use the following knowledge base context to answer the user's question. If the context doesn't contain the exact answer, you can infer a reasonable answer based on standard ride-sharing practices or tell the user to contact support. Keep your answers concise, friendly, and formatted nicely.
 
@@ -70,7 +74,7 @@ ${contextStr}
       }
     });
 
-    return NextResponse.json({ 
+    return NextResponse.json({
       reply: response.text,
       contextSources: topDocs.filter(d => d.score > 0.6).map(d => d.question) // Just for debugging/UI
     });
