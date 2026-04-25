@@ -58,6 +58,8 @@ services:
       NEXTAUTH_URL: http://localhost:3000
       MONGODB_URL: mongodb://mongo:27017/rydex
       NEXT_PUBLIC_SOCKET_URL: http://localhost:5001
+      NEXT_PUBLIC_ZEGO_APP_ID: 727267875
+      NEXT_PUBLIC_ZEGO_SERVER_SECRET: 36a633b5333e2fd4ee2970e8a89184cc
     depends_on:
       - backend
       - socketserver
