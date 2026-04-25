@@ -211,7 +211,7 @@ export default function BookPage() {
           <motion.button
             whileTap={{ scale: 0.88 }}
             onClick={() => router.back()}
-            className="w-11 h-11 rounded-2xl bg-white border border-zinc-200 shadow-sm flex items-center justify-center hover:bg-zinc-50 transition-colors flex-shrink-0"
+            className="w-11 h-11 rounded-2xl bg-white border border-zinc-200 shadow-sm flex items-center justify-center hover:bg-zinc-50 transition-colors shrink-0"
           >
             <ArrowLeft size={17} className="text-zinc-900" />
           </motion.button>
@@ -220,7 +220,7 @@ export default function BookPage() {
             <p className="text-zinc-400 text-xs mt-0.5">Fill in the details below</p>
           </div>
           {/* Progress dots */}
-          <div className="flex items-center gap-1.5 flex-shrink-0">
+          <div className="flex items-center gap-1.5 shrink-0">
             {[0, 1, 2, 3].map(i => (
               <motion.div
                 key={i}
@@ -243,7 +243,7 @@ export default function BookPage() {
             {/* ══ STEP 1 — VEHICLE ══ */}
             <motion.div variants={stepVariants} initial="hidden" animate="visible" transition={{ delay: 0.05 }}>
               <div className="flex items-center gap-2 mb-3">
-                <div className="w-5 h-5 rounded-full bg-zinc-900 flex items-center justify-center flex-shrink-0">
+                <div className="w-5 h-5 rounded-full bg-zinc-900 flex items-center justify-center shrink-0">
                   <span className="text-white text-[9px] font-black">1</span>
                 </div>
                 <p className="text-xs font-bold text-zinc-500 uppercase tracking-widest">Choose Vehicle</p>
@@ -266,7 +266,7 @@ export default function BookPage() {
                           : "bg-zinc-50 border-zinc-200 hover:border-zinc-400"
                       }`}
                     >
-                      <div className={`w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 transition-colors ${
+                      <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 transition-colors ${
                         active ? "bg-white" : "bg-zinc-200"
                       }`}>
                         <v.Icon size={18} className={active ? "text-zinc-900" : "text-zinc-600"} />
@@ -295,14 +295,14 @@ export default function BookPage() {
             {/* ══ STEP 2 — MOBILE ══ */}
             <motion.div variants={stepVariants} initial="hidden" animate="visible" transition={{ delay: 0.15 }}>
               <div className="flex items-center gap-2 mb-3">
-                <div className="w-5 h-5 rounded-full bg-zinc-900 flex items-center justify-center flex-shrink-0">
+                <div className="w-5 h-5 rounded-full bg-zinc-900 flex items-center justify-center shrink-0">
                   <span className="text-white text-[9px] font-black">2</span>
                 </div>
                 <p className="text-xs font-bold text-zinc-500 uppercase tracking-widest">Mobile Number</p>
               </div>
 
               <div className="flex items-center gap-3 bg-zinc-50 border border-zinc-200 rounded-2xl px-4 py-3 focus-within:border-zinc-900 focus-within:bg-white transition-all">
-                <div className="w-8 h-8 rounded-xl bg-zinc-200 flex items-center justify-center flex-shrink-0">
+                <div className="w-8 h-8 rounded-xl bg-zinc-200 flex items-center justify-center shrink-0">
                   <Phone size={14} className="text-zinc-600" />
                 </div>
                 <input
@@ -317,7 +317,7 @@ export default function BookPage() {
                 <AnimatePresence>
                   {mobile.length >= 10 && (
                     <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} exit={{ scale: 0 }}>
-                      <CheckCircle2 size={16} className="text-emerald-500 fill-emerald-50 flex-shrink-0" />
+                      <CheckCircle2 size={16} className="text-emerald-500 fill-emerald-50 shrink-0" />
                     </motion.div>
                   )}
                 </AnimatePresence>
@@ -331,7 +331,7 @@ export default function BookPage() {
             {/* ══ STEP 3 — LOCATIONS ══ */}
             <motion.div variants={stepVariants} initial="hidden" animate="visible" transition={{ delay: 0.22 }} className="space-y-3">
               <div className="flex items-center gap-2 mb-3">
-                <div className="w-5 h-5 rounded-full bg-zinc-900 flex items-center justify-center flex-shrink-0">
+                <div className="w-5 h-5 rounded-full bg-zinc-900 flex items-center justify-center shrink-0">
                   <span className="text-white text-[9px] font-black">3</span>
                 </div>
                 <p className="text-xs font-bold text-zinc-500 uppercase tracking-widest">Route</p>
@@ -364,7 +364,7 @@ export default function BookPage() {
                 {/* PICKUP INPUT */}
                 <div className="relative z-20">
                   <div className="flex items-center gap-3 px-4 py-3.5 focus-within:bg-white rounded-t-2xl transition-colors">
-                    <div className="flex flex-col items-center flex-shrink-0">
+                    <div className="flex flex-col items-center shrink-0">
                       <div className="w-3 h-3 rounded-full bg-zinc-900 border-2 border-white shadow" />
                       <div className="w-px h-5 bg-zinc-300 mt-1" />
                     </div>
@@ -378,7 +378,7 @@ export default function BookPage() {
                       whileTap={{ scale: 0.88 }}
                       onClick={useCurrentLocation}
                       disabled={locating}
-                      className="w-8 h-8 rounded-xl bg-zinc-200 hover:bg-zinc-300 transition-colors flex items-center justify-center flex-shrink-0"
+                      className="w-8 h-8 rounded-xl bg-zinc-200 hover:bg-zinc-300 transition-colors flex items-center justify-center shrink-0"
                     >
                       <LocateFixed size={14} className={`text-zinc-700 ${locating ? "animate-spin" : ""}`} />
                     </motion.button>
@@ -407,9 +407,9 @@ export default function BookPage() {
                             }}
                             className="flex items-center gap-3 w-full px-4 py-3 text-left hover:bg-zinc-50 transition-colors border-b border-zinc-100 last:border-0"
                           >
-                            <MapPin size={13} className="text-zinc-400 flex-shrink-0" />
+                            <MapPin size={13} className="text-zinc-400 shrink-0" />
                             <span className="text-sm text-zinc-800 font-medium truncate">{fmt(p)}</span>
-                            <ChevronRight size={13} className="text-zinc-300 flex-shrink-0 ml-auto" />
+                            <ChevronRight size={13} className="text-zinc-300 shrink-0 ml-auto" />
                           </motion.button>
                         ))}
                       </motion.div>
@@ -429,7 +429,7 @@ export default function BookPage() {
                     >
                       <div className="h-px bg-zinc-200 mx-4" />
                       <div className="flex items-center gap-3 px-4 py-3.5 focus-within:bg-white transition-colors">
-                        <div className="flex-shrink-0">
+                        <div className="shrink-0">
                           <div className="w-3 h-3 rounded-full bg-zinc-400 border-2 border-white shadow" />
                         </div>
                         <input
@@ -498,7 +498,7 @@ export default function BookPage() {
                 {/* DROP INPUT */}
                 <div className="relative z-10">
                   <div className="flex items-center gap-3 px-4 py-3.5 focus-within:bg-white rounded-b-2xl transition-colors">
-                    <div className="flex-shrink-0">
+                    <div className="shrink-0">
                       <div className="w-3 h-3 rounded-sm bg-zinc-900 border-2 border-white shadow" />
                     </div>
                     <input
@@ -508,7 +508,7 @@ export default function BookPage() {
                       placeholder={pickupCountry ? "Drop location" : "Select pickup first"}
                       className="flex-1 bg-transparent text-sm font-semibold text-zinc-900 placeholder:text-zinc-400 outline-none disabled:opacity-50"
                     />
-                    <Navigation size={14} className="text-zinc-300 flex-shrink-0" />
+                    <Navigation size={14} className="text-zinc-300 shrink-0" />
                   </div>
 
                   <AnimatePresence>
@@ -533,9 +533,9 @@ export default function BookPage() {
                             }}
                             className="flex items-center gap-3 w-full px-4 py-3 text-left hover:bg-zinc-50 transition-colors border-b border-zinc-100 last:border-0"
                           >
-                            <Navigation size={13} className="text-zinc-400 flex-shrink-0" />
+                            <Navigation size={13} className="text-zinc-400 shrink-0" />
                             <span className="text-sm text-zinc-800 font-medium truncate">{fmt(p)}</span>
-                            <ChevronRight size={13} className="text-zinc-300 flex-shrink-0 ml-auto" />
+                            <ChevronRight size={13} className="text-zinc-300 shrink-0 ml-auto" />
                           </motion.button>
                         ))}
                       </motion.div>
@@ -548,7 +548,7 @@ export default function BookPage() {
             {/* ══ STEP 4 — DISPATCH TIER ══ */}
             <motion.div variants={stepVariants} initial="hidden" animate="visible" transition={{ delay: 0.25 }}>
               <div className="flex items-center gap-2 mb-3">
-                <div className="w-5 h-5 rounded-full bg-zinc-900 flex items-center justify-center flex-shrink-0">
+                <div className="w-5 h-5 rounded-full bg-zinc-900 flex items-center justify-center shrink-0">
                   <span className="text-white text-[9px] font-black">4</span>
                 </div>
                 <p className="text-xs font-bold text-zinc-500 uppercase tracking-widest">Dispatch Option</p>
@@ -582,7 +582,7 @@ export default function BookPage() {
                   className="flex items-center justify-between w-full mb-3"
                 >
                   <div className="flex items-center gap-2">
-                    <div className="w-5 h-5 rounded-full bg-zinc-900 flex items-center justify-center flex-shrink-0">
+                    <div className="w-5 h-5 rounded-full bg-zinc-900 flex items-center justify-center shrink-0">
                       <span className="text-white text-[9px] font-black">5</span>
                     </div>
                     <p className="text-xs font-bold text-zinc-500 uppercase tracking-widest">Ride Preferences</p>
@@ -636,7 +636,7 @@ export default function BookPage() {
             {/* ══ STEP 6 — SCHEDULE (Optional) ══ */}
             <motion.div variants={stepVariants} initial="hidden" animate="visible" transition={{ delay: 0.28 }}>
               <div className="flex items-center gap-2 mb-3">
-                <div className="w-5 h-5 rounded-full bg-zinc-900 flex items-center justify-center flex-shrink-0">
+                <div className="w-5 h-5 rounded-full bg-zinc-900 flex items-center justify-center shrink-0">
                   <span className="text-white text-[9px] font-black">6</span>
                 </div>
                 <p className="text-xs font-bold text-zinc-500 uppercase tracking-widest">Timing</p>
@@ -666,7 +666,7 @@ export default function BookPage() {
                     className="overflow-hidden"
                   >
                     <div className="flex items-center gap-3 bg-zinc-50 border border-zinc-200 rounded-2xl px-4 py-3 focus-within:border-zinc-900 focus-within:bg-white transition-all">
-                      <div className="w-8 h-8 rounded-xl bg-zinc-200 flex items-center justify-center flex-shrink-0">
+                      <div className="w-8 h-8 rounded-xl bg-zinc-200 flex items-center justify-center shrink-0">
                         <Calendar size={14} className="text-zinc-600" />
                       </div>
                       <input

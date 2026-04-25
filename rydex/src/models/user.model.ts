@@ -58,6 +58,10 @@ socketId:string | null
   totalReviews?: number;
   rewardPoints?: number;
 
+  referralCode?: string;
+  referredBy?: string;
+  enterpriseId?: string;
+
   createdAt: Date;
   updatedAt: Date;
 }

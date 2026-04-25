@@ -13,8 +13,12 @@ const googleProvider =
       })
     : null
 
+// Validate required environment variables at startup
 if (!process.env.AUTH_SECRET && !process.env.NEXTAUTH_SECRET) {
-  process.env.AUTH_SECRET = "rydex-dev-secret"
+  throw new Error(
+    "CRITICAL: AUTH_SECRET or NEXTAUTH_SECRET environment variable must be set. " +
+    "Set one of these in your .env.local file to use a strong, random secret."
+  )
 }
 
 if (!process.env.AUTH_URL && !process.env.NEXTAUTH_URL) {
