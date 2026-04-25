@@ -23,6 +23,8 @@ export async function POST(req: Request) {
     dropLocation,
     fare,
     mobileNumber, // This is user's mobile number from frontend
+    promoCode,
+    discountAmount,
   } = body;
 
   if (
@@ -70,6 +72,8 @@ export async function POST(req: Request) {
     fare,
     userMobileNumber: mobileNumber, // Mobile number from frontend (user's)
     driverMobileNumber: driver.mobileNumber, // Mobile number from database (driver's)
+    promoCode,
+    discountAmount,
     status: "requested",
   });
   

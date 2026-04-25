@@ -241,6 +241,7 @@ function SearchPageContent() {
                 <VehicleBookingCard
                   vehicle={v}
                   distanceKm={km ?? undefined}
+                  surgeFactor={surgeFactor}
                   isRecommended={i === 0}
                   onBook={() => {
                     const url = new URLSearchParams({
@@ -248,7 +249,7 @@ function SearchPageContent() {
                       vehicle:    v.type,
                       driverId:   v.owner,
                       vehicleId:  v._id,
-                      fare:       String(Math.round(v.baseFare + (km ?? 0) * v.pricePerKm)),
+                      fare:       String(Math.round((v.baseFare + (km ?? 0) * v.pricePerKm) * surgeFactor)),
                       pickupLat:  String(pickupLat),
                       pickupLng:  String(pickupLng),
                       dropLat:    params.get("dropLat") || "",

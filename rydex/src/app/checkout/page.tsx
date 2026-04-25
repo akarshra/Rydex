@@ -4,8 +4,8 @@ import { motion, AnimatePresence } from "framer-motion";
 import {
   MapPin, Navigation, ShieldCheck,
   Bike, Car, Truck, Loader2, CheckCircle2,
-  XCircle, Clock, CreditCard, Banknote,
   ArrowRight, RotateCcw, AlertCircle, Wallet,
+  Tag, XCircle, Clock, CreditCard, Banknote
 } from "lucide-react";
 import { Suspense, useState, useEffect } from "react";
 import { useSearchParams } from "next/navigation";
@@ -48,7 +48,33 @@ function CheckoutPageContent() {
   const [loading,       setLoading]       = useState(false);
   const [bookingId,     setBookingId]     = useState<string | null>(null);
   const [status,        setStatus]        = useState<Status>("idle");
-  const [paymentMethod, setPaymentMethod] = useState<"cash" | "online" | null>(null);
+  const [paymentMethod, setPaymentMethod] = useState<string | null>(null);
+
+  const [promoCode, setPromoCode] = useState("");
+  const [promoDiscount, setPromoDiscount] = useState(0);
+  const [promoError, setPromoError] = useState("");
+  const [validatingPromo, setValidatingPromo] = useState(false);
+  const [promoApplied, setPromoApplied] = useState(false);
+
+  /* Saved Payment Methods */
+  const [savedMethods, setSavedMethods] = useState<any[]>([]);
+
+  useEffect(() => {
+    const fetchMethods = async () => {
+      try {
+        const res = await fetch("/api/payment-methods/get");
+        const data = await res.json();
+        setSavedMethods(data.paymentMethods || []);
+      } catch (e) { console.error(e); }
+    };
+    fetchMethods();
+  }, []);
+
+  /* Insurance */
+  const [insuranceType, setInsuranceType] = useState<"none" | "basic" | "premium" | "comprehensive">("none");
+  const insurancePremium = insuranceType === "basic" ? 25 : insuranceType === "premium" ? 50 : insuranceType === "comprehensive" ? 100 : 0;
+
+  const finalFare = Math.max(0, fare - promoDiscount) + insurancePremium;
 
   /* ── CREATE BOOKING ── */
   const handleCreateBooking = async () => {
@@ -61,119 +87,59 @@ function CheckoutPageContent() {
           pickupAddress: pickup, dropAddress: drop,
           pickupLocation: { type: "Point", coordinates: [pickupLng, pickupLat] },
           dropLocation:   { type: "Point", coordinates: [dropLng,   dropLat]   },
-          fare, mobileNumber,
+          fare: finalFare, mobileNumber,
+          promoCode: promoApplied ? promoCode : undefined,
+          discountAmount: promoDiscount,
         }),
       });
       const data = await res.json();
-      if (data.success) { setBookingId(data.booking._id); setStatus("requested"); }
+      if (data.success) { 
+        setBookingId(data.booking._id); 
+        setStatus("requested"); 
+        
+        if (insuranceType !== "none") {
+          try {
+            await fetch("/api/insurance/create", {
+              method: "POST", headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ bookingId: data.booking._id, insuranceType })
+            });
+          } catch (e) { console.error("Insurance creation failed", e); }
+        }
+      }
       else alert(data.message || "Booking failed");
     } catch { alert("Something went wrong"); }
     finally { setLoading(false); }
   };
-
-  function loadRazorpayScript() {
-  return new Promise((resolve) => {
-
-    if (typeof window === "undefined") {
-      resolve(false);
-      return;
-    }
-
-    if ((window as any).Razorpay) {
-      resolve(true);
-      return;
-    }
-
-    const script = document.createElement("script");
-    script.src = "https://checkout.razorpay.com/v1/checkout.js";
-    script.onload = () => resolve(true);
-    script.onerror = () => resolve(false);
-
-    document.body.appendChild(script);
-  });
-}
 
   /* ── PAYMENT CONFIRM ── */
  const handlePaymentConfirm = async () => {
 
   if (!bookingId || !paymentMethod) return;
 
-  setLoading(true);
+    setLoading(true);
 
-  try {
+    try {
 
-    if (paymentMethod === "cash") {
-
+      const methodToSave = paymentMethod === "cash" ? "cash" : "online";
       const res = await fetch(`/api/booking/${bookingId}/confirm-payment`, {
-        method:"POST",
-        headers:{ "Content-Type":"application/json" },
-        body:JSON.stringify({ method:"cash" })
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ method: methodToSave }),
       });
 
       const data = await res.json();
 
-      if(data.success){
-        window.location.href = `/ride/${bookingId}`;
-      }
-
-      return;
+    if (data.success) {
+      window.location.href = `/ride/${bookingId}`;
+    } else {
+      alert(data.message || "Could not confirm booking");
     }
-
-    /* LOAD RAZORPAY SCRIPT */
-
-    const razorpayLoaded = await loadRazorpayScript();
-
-    if (!razorpayLoaded) {
-      alert("Razorpay SDK failed to load");
-      return;
-    }
-
-    /* CREATE ORDER */
-
-    const orderRes = await fetch("/api/payment/create",{
-      method:"POST",
-      headers:{ "Content-Type":"application/json" },
-      body:JSON.stringify({ bookingId })
-    });
-
-    const orderData = await orderRes.json();
-
-    const options = {
-      key: process.env.NEXT_PUBLIC_RAZORPAY_KEY,
-      amount: orderData.amount,
-      currency: "INR",
-      name: "RYDEX",
-      description: "Ride Payment",
-      order_id: orderData.orderId,
-
-      handler: async function (response:any) {
-
-        const verify = await fetch("/api/payment/verify",{
-          method:"POST",
-          headers:{ "Content-Type":"application/json" },
-          body:JSON.stringify({
-            bookingId,
-            ...response
-          })
-        });
-
-        const verifyData = await verify.json();
-
-        if(verifyData.success){
-          window.location.href = `/ride/${bookingId}`;
-        }
-
-      }
-    };
-
-    const paymentObject = new (window as any).Razorpay(options);
-    paymentObject.open();
 
   }
 
   catch(err){
     console.error(err);
-    alert("Payment failed");
+    alert("Confirmation failed");
   }
 
   finally{
@@ -186,6 +152,30 @@ function CheckoutPageContent() {
     if (!bookingId) return;
     await fetch(`/api/booking/${bookingId}/cancel`, { method: "POST" });
     setStatus("cancelled");
+  };
+
+  /* ── PROMO ── */
+  const handleValidatePromo = async () => {
+    if (!promoCode) return;
+    setValidatingPromo(true);
+    setPromoError("");
+    try {
+      const res = await fetch("/api/promo/validate", {
+        method: "POST", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ code: promoCode, rideAmount: fare, vehicleType: vehicle }),
+      });
+      const data = await res.json();
+      if (res.ok) {
+        setPromoDiscount(data.discount);
+        setPromoApplied(true);
+      } else {
+        setPromoError(data.error || "Invalid promo code");
+      }
+    } catch {
+      setPromoError("Failed to validate promo code");
+    } finally {
+      setValidatingPromo(false);
+    }
   };
 
   /* ── SOCKET ── */
@@ -293,21 +283,104 @@ function CheckoutPageContent() {
                 </div>
               </div>
 
+              {/* Promo Code */}
+              {status === "idle" && (
+                <div className="mb-6 border-t border-zinc-100 pt-6">
+                  <p className="text-[10px] font-black uppercase tracking-[0.18em] text-zinc-400 mb-3">Apply Promo</p>
+                  {!promoApplied ? (
+                    <div>
+                      <div className="flex gap-2">
+                        <div className="relative flex-1">
+                          <Tag size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-400" />
+                          <input
+                            value={promoCode}
+                            onChange={(e) => setPromoCode(e.target.value.toUpperCase())}
+                            placeholder="Enter Code"
+                            className="w-full bg-zinc-50 border border-zinc-200 rounded-xl py-3 pl-10 pr-3 text-sm font-bold uppercase placeholder:normal-case placeholder:font-medium outline-none focus:border-zinc-900 transition-colors"
+                          />
+                        </div>
+                        <button
+                          onClick={handleValidatePromo}
+                          disabled={!promoCode || validatingPromo}
+                          className="bg-zinc-900 text-white px-5 rounded-xl text-sm font-bold disabled:opacity-50 hover:bg-black transition-colors"
+                        >
+                          {validatingPromo ? "..." : "Apply"}
+                        </button>
+                      </div>
+                      {promoError && <p className="text-red-500 text-xs font-semibold mt-2 ml-1">{promoError}</p>}
+                    </div>
+                  ) : (
+                    <div className="flex items-center justify-between bg-emerald-50 border border-emerald-100 rounded-xl p-3">
+                      <div className="flex items-center gap-2">
+                        <CheckCircle2 size={16} className="text-emerald-500" />
+                        <div>
+                          <p className="text-emerald-700 text-sm font-bold tracking-wide">{promoCode}</p>
+                          <p className="text-emerald-600 text-xs">Promo code applied</p>
+                        </div>
+                      </div>
+                      <button
+                        onClick={() => {
+                          setPromoApplied(false);
+                          setPromoCode("");
+                          setPromoDiscount(0);
+                        }}
+                        className="text-emerald-700 hover:bg-emerald-100 p-1.5 rounded-lg transition-colors"
+                      >
+                        <XCircle size={16} />
+                      </button>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* Ride Insurance */}
+              {status === "idle" && (
+                <div className="mb-6 border-t border-zinc-100 pt-6">
+                  <p className="text-[10px] font-black uppercase tracking-[0.18em] text-zinc-400 mb-3">Ride Insurance</p>
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                    {[
+                      { id: "none", label: "None", price: 0 },
+                      { id: "basic", label: "Basic", price: 25 },
+                      { id: "premium", label: "Premium", price: 50 },
+                    ].map((plan) => (
+                      <button
+                        key={plan.id}
+                        onClick={() => setInsuranceType(plan.id as any)}
+                        className={`flex flex-col items-center justify-center py-3 px-2 rounded-xl text-xs font-semibold transition-all border ${insuranceType === plan.id ? "bg-zinc-900 text-white border-zinc-900" : "bg-zinc-50 text-zinc-600 border-zinc-200 hover:bg-zinc-100"}`}
+                      >
+                        <ShieldCheck size={16} className={`mb-1 ${insuranceType === plan.id ? "text-emerald-400" : "text-zinc-400"}`} />
+                        <span>{plan.label}</span>
+                        {plan.price > 0 && <span className={`mt-0.5 font-black ${insuranceType === plan.id ? "text-emerald-400" : "text-zinc-900"}`}>+₹{plan.price}</span>}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+
               {/* Fare */}
               <div className="flex items-end justify-between pt-6 border-t border-zinc-100">
                 <div>
                   <p className="text-[10px] font-black uppercase tracking-[0.18em] text-zinc-400 mb-1">Total Fare</p>
                   <p className="text-zinc-400 text-xs font-medium">Includes base + distance charges</p>
                 </div>
-                <motion.div
-                  initial={{ scale: 0.8, opacity: 0 }}
-                  animate={{ scale: 1, opacity: 1 }}
-                  transition={{ delay: 0.3, type: "spring", stiffness: 200 }}
-                  className="flex items-baseline gap-1"
-                >
-                  <span className="text-zinc-400 text-lg font-black">₹</span>
-                  <span className="text-zinc-900 text-5xl font-black tracking-tight leading-none">{fare}</span>
-                </motion.div>
+                <div className="text-right">
+                  {promoApplied && (
+                    <p className="text-emerald-500 text-sm font-bold mb-1">-₹{Math.round(promoDiscount)} saved</p>
+                  )}
+                  {insurancePremium > 0 && (
+                    <p className="text-zinc-500 text-sm font-bold mb-1">+₹{insurancePremium} insurance</p>
+                  )}
+                  <motion.div
+                    initial={{ scale: 0.8, opacity: 0 }}
+                    animate={{ scale: 1, opacity: 1 }}
+                    transition={{ delay: 0.3, type: "spring", stiffness: 200 }}
+                    className="flex items-baseline gap-1 justify-end"
+                  >
+                    {promoApplied && <span className="text-zinc-400 text-xl font-bold line-through mr-2">₹{fare}</span>}
+                    <span className="text-zinc-400 text-lg font-black">₹</span>
+                    <span className="text-zinc-900 text-5xl font-black tracking-tight leading-none">{Math.round(finalFare)}</span>
+                  </motion.div>
+                </div>
               </div>
             </div>
           </motion.div>
@@ -338,7 +411,7 @@ function CheckoutPageContent() {
                         {[
                           { icon: <Clock size={14} />, text: "Driver will respond within 2 minutes" },
                           { icon: <ShieldCheck size={14} />, text: "Verified & insured drivers only" },
-                          { icon: <CreditCard size={14} />, text: "Pay after driver accepts" },
+                          { icon: <CreditCard size={14} />, text: "Pay in cash after driver accepts" },
                         ].map((item, i) => (
                           <div key={i} className="flex items-center gap-3">
                             <div className="w-7 h-7 rounded-xl bg-zinc-200 flex items-center justify-center text-zinc-600 flex-shrink-0">{item.icon}</div>
@@ -442,13 +515,45 @@ function CheckoutPageContent() {
                   >
                     <div>
                       <p className="text-[10px] font-black uppercase tracking-[0.18em] text-zinc-400 mb-1">Almost there</p>
-                      <h3 className="text-2xl font-black text-zinc-900">Select Payment</h3>
+                      <h3 className="text-2xl font-black text-zinc-900">Confirm Payment</h3>
                     </div>
 
                     <div className="space-y-3">
+                      {savedMethods.map((m) => {
+                        const active = paymentMethod === m._id;
+                        const title = m.type === "card" ? `Card ending in ${m.cardDetails?.last4}` : m.type === "upi" ? m.upiDetails?.upiId : "Wallet";
+                        const sub = m.type === "card" ? "Credit/Debit Card" : m.type === "upi" ? "UPI" : "Digital Wallet";
+                        const Icon = CreditCard;
+                        return (
+                          <motion.button
+                            key={m._id}
+                            whileTap={{ scale: 0.97 }}
+                            onClick={() => setPaymentMethod(m._id)}
+                            className={`w-full flex items-center gap-4 p-4 rounded-2xl border-2 text-left transition-all duration-200 ${
+                              active ? "bg-zinc-900 border-zinc-900" : "bg-zinc-50 border-zinc-200 hover:border-zinc-400"
+                            }`}
+                          >
+                            <div className={`w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 transition-colors ${
+                              active ? "bg-white/10" : "bg-zinc-200"
+                            }`}>
+                              <Icon size={18} className={active ? "text-white" : "text-zinc-600"} />
+                            </div>
+                            <div className="flex-1 min-w-0">
+                              <p className={`text-sm font-bold capitalize ${active ? "text-white" : "text-zinc-900"}`}>{title}</p>
+                              <p className={`text-xs font-medium ${active ? "text-zinc-400" : "text-zinc-400"}`}>{sub}</p>
+                            </div>
+                            <AnimatePresence>
+                              {active && (
+                                <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} exit={{ scale: 0 }}>
+                                  <CheckCircle2 size={16} className="text-white flex-shrink-0" />
+                                </motion.div>
+                              )}
+                            </AnimatePresence>
+                          </motion.button>
+                        );
+                      })}
                       {[
-                        { id: "cash",   Icon: Banknote,    title: "Cash",           sub: "Pay driver after ride" },
-                        { id: "online", Icon: Wallet,      title: "Online Payment",  sub: "UPI · Card · Netbanking" },
+                        { id: "cash", Icon: Banknote, title: "Cash", sub: "Pay driver after ride" },
                       ].map(({ id, Icon, title, sub }) => {
                         const active = paymentMethod === id;
                         return (
@@ -492,9 +597,7 @@ function CheckoutPageContent() {
                         ? <Loader2 size={17} className="animate-spin" />
                         : paymentMethod === "cash"
                         ? <><Banknote size={16} /><span>Confirm Cash Ride</span></>
-                        : paymentMethod === "online"
-                        ? <><span>Proceed to Payment</span><ArrowRight size={16} /></>
-                        : <span>Select a Method</span>
+                        : <><CreditCard size={16} /><span>Pay Now</span></>
                       }
                     </motion.button>
                   </motion.div>

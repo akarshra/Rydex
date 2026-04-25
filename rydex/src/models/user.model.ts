@@ -54,6 +54,10 @@ socketId:string | null
   otp?: string;
   otpExpiresAt?: Date;
 
+  averageRating?: number;
+  totalReviews?: number;
+  rewardPoints?: number;
+
   createdAt: Date;
   updatedAt: Date;
 }
@@ -170,6 +174,23 @@ const UserSchema = new Schema<IUser>(
 
     otp: String,
     otpExpiresAt: Date,
+
+    averageRating: {
+      type: Number,
+      default: 0,
+      min: 0,
+      max: 5,
+    },
+
+    totalReviews: {
+      type: Number,
+      default: 0,
+    },
+
+    rewardPoints: {
+      type: Number,
+      default: 0,
+    },
   },
   { timestamps: true }
 );

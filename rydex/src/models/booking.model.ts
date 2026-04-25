@@ -53,6 +53,8 @@ pickupOtpExpires: Date
 dropOtpExpires: Date
   createdAt: Date;
   updatedAt: Date;
+  promoCode?: string;
+  discountAmount?: number;
 }
 
 const BookingSchema = new Schema<IBooking>(
@@ -138,6 +140,8 @@ dropOtpExpires: {
       required: true,
       trim: true,
     },
+    promoCode: { type: String },
+    discountAmount: { type: Number, default: 0 },
   },
   { timestamps: true }
 );
