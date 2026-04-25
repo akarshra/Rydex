@@ -89,6 +89,8 @@ export default function RidePage() {
   const [sosSuccess,       setSosSuccess]       = useState(false);
 
   /* ── FETCH ── */
+
+
   const fetchBooking = async () => {
     try {
       setLoading(true);
@@ -323,6 +325,51 @@ export default function RidePage() {
             <PanelContent {...panelProps} />
           </div>
         </motion.div>
+      {/* ══ SOS MODAL ══ */}
+      <AnimatePresence>
+        {sosModalOpen && (
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 z-[999] flex items-center justify-center bg-zinc-950/80 backdrop-blur-sm px-4">
+            <motion.div initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.95, opacity: 0 }} className="bg-zinc-900 border border-red-500/30 w-full max-w-sm rounded-3xl p-6 shadow-2xl relative overflow-hidden">
+              <div className="absolute top-0 left-0 right-0 h-1 bg-red-500" />
+              <div className="flex flex-col items-center text-center">
+                <div className="w-16 h-16 bg-red-500/10 rounded-full flex items-center justify-center mb-4">
+                  <ShieldAlert size={32} className="text-red-500" />
+                </div>
+                <h2 className="text-white text-xl font-bold mb-2">Emergency SOS</h2>
+                <p className="text-zinc-400 text-sm mb-6">Select the nature of your emergency. This will alert Rydex Support immediately.</p>
+                
+                {sosSuccess ? (
+                  <div className="bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 p-4 rounded-2xl w-full flex items-center justify-center gap-2 font-semibold">
+                    <CheckCircle2 size={20} /> SOS Alert Sent
+                  </div>
+                ) : (
+                  <>
+                    <div className="grid grid-cols-1 gap-2 w-full mb-6">
+                      {[
+                        { id: "accident", label: "Accident / Crash" },
+                        { id: "medical", label: "Medical Emergency" },
+                        { id: "security", label: "Security Threat" },
+                      ].map(t => (
+                        <button key={t.id} onClick={() => setSosType(t.id)} className={`w-full py-3 px-4 rounded-xl text-sm font-semibold transition-colors border ${sosType === t.id ? "bg-red-500 text-white border-red-500" : "bg-zinc-800 text-zinc-300 border-zinc-700 hover:bg-zinc-700"}`}>
+                          {t.label}
+                        </button>
+                      ))}
+                    </div>
+                    <div className="flex gap-2 w-full">
+                      <button onClick={() => setSosModalOpen(false)} className="flex-1 bg-zinc-800 text-white py-3.5 rounded-xl font-bold hover:bg-zinc-700 transition-colors">
+                        Cancel
+                      </button>
+                      <button onClick={handleSosSubmit} disabled={!sosType || isSosSubmitting} className="flex-1 bg-red-500 text-white py-3.5 rounded-xl font-bold hover:bg-red-600 transition-colors disabled:opacity-50">
+                        {isSosSubmitting ? "Sending..." : "Alert Now"}
+                      </button>
+                    </div>
+                  </>
+                )}
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
       </div>
     </div>
   );
@@ -529,51 +576,6 @@ function CompletedScreen({ booking, router }: { booking: BookingDetails; router:
           </button>
         </motion.div>
       </div>
-      {/* ══ SOS MODAL ══ */}
-      <AnimatePresence>
-        {sosModalOpen && (
-          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 z-[999] flex items-center justify-center bg-zinc-950/80 backdrop-blur-sm px-4">
-            <motion.div initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.95, opacity: 0 }} className="bg-zinc-900 border border-red-500/30 w-full max-w-sm rounded-3xl p-6 shadow-2xl relative overflow-hidden">
-              <div className="absolute top-0 left-0 right-0 h-1 bg-red-500" />
-              <div className="flex flex-col items-center text-center">
-                <div className="w-16 h-16 bg-red-500/10 rounded-full flex items-center justify-center mb-4">
-                  <ShieldAlert size={32} className="text-red-500" />
-                </div>
-                <h2 className="text-white text-xl font-bold mb-2">Emergency SOS</h2>
-                <p className="text-zinc-400 text-sm mb-6">Select the nature of your emergency. This will alert Rydex Support immediately.</p>
-                
-                {sosSuccess ? (
-                  <div className="bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 p-4 rounded-2xl w-full flex items-center justify-center gap-2 font-semibold">
-                    <CheckCircle2 size={20} /> SOS Alert Sent
-                  </div>
-                ) : (
-                  <>
-                    <div className="grid grid-cols-1 gap-2 w-full mb-6">
-                      {[
-                        { id: "accident", label: "Accident / Crash" },
-                        { id: "medical", label: "Medical Emergency" },
-                        { id: "security", label: "Security Threat" },
-                      ].map(t => (
-                        <button key={t.id} onClick={() => setSosType(t.id)} className={`w-full py-3 px-4 rounded-xl text-sm font-semibold transition-colors border ${sosType === t.id ? "bg-red-500 text-white border-red-500" : "bg-zinc-800 text-zinc-300 border-zinc-700 hover:bg-zinc-700"}`}>
-                          {t.label}
-                        </button>
-                      ))}
-                    </div>
-                    <div className="flex gap-2 w-full">
-                      <button onClick={() => setSosModalOpen(false)} className="flex-1 bg-zinc-800 text-white py-3.5 rounded-xl font-bold hover:bg-zinc-700 transition-colors">
-                        Cancel
-                      </button>
-                      <button onClick={handleSosSubmit} disabled={!sosType || isSosSubmitting} className="flex-1 bg-red-500 text-white py-3.5 rounded-xl font-bold hover:bg-red-600 transition-colors disabled:opacity-50">
-                        {isSosSubmitting ? "Sending..." : "Alert Now"}
-                      </button>
-                    </div>
-                  </>
-                )}
-              </div>
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
     </motion.div>
   );
 }

@@ -180,7 +180,7 @@ export default function PartnerBookingsPage() {
                         <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: '#888' }} tickFormatter={(val) => `₹${val}`} />
                         <Tooltip
                           contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 20px rgba(0,0,0,0.08)' }}
-                          formatter={(value: number) => [`₹${value}`, "Earnings"]}
+                          formatter={(value: any) => [`₹${value}`, "Earnings"]}
                         />
                         <Line type="monotone" dataKey="earnings" stroke="#2563eb" strokeWidth={3} dot={{ r: 4, fill: '#2563eb', strokeWidth: 2, stroke: '#fff' }} activeDot={{ r: 6 }} />
                       </LineChart>

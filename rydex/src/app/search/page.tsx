@@ -46,6 +46,16 @@ function SearchPageContent() {
   const meta         = VEHICLE_META[vehicle];
   const eta          = km !== null ? Math.max(3, Math.round((km / 25) * 60)) : null;
 
+  const [surgeFactor, setSurgeFactor] = useState(1.0);
+
+  useEffect(() => {
+    if (!pickupLat || !pickupLng) return;
+    fetch(`/api/surge/get-current?latitude=${pickupLat}&longitude=${pickupLng}`)
+      .then(r => r.json())
+      .then(d => { if (d.surgeFactor) setSurgeFactor(d.surgeFactor); })
+      .catch(console.error);
+  }, [pickupLat, pickupLng]);
+
   async function fetchNearbyVehicles(lat: number, lng: number) {
     try {
       setLoading(true);

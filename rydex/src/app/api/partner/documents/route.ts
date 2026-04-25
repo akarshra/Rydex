@@ -82,8 +82,52 @@ export async function POST(req: NextRequest) {
       );
     }
 
+    let isAutoApproved = false;
+    let autoApproveReason = null;
+
+    /* ========= AI AUTO-KYC VERIFICATION ========= */
+    if (aadhaar) {
+      try {
+        const { GoogleGenAI } = await import("@google/genai");
+        const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
+        
+        const aadhaarBuffer = Buffer.from(await aadhaar.arrayBuffer());
+        const base64Data = aadhaarBuffer.toString("base64");
+        const mimeType = aadhaar.type || "image/jpeg";
+
+        const response = await ai.models.generateContent({
+          model: 'gemini-2.5-flash',
+          contents: [
+            {
+              role: 'user',
+              parts: [
+                { inlineData: { data: base64Data, mimeType } },
+                { text: `Extract the full name from this ID document. Compare it to the registered user's name: "${user.name}". Are they the same person? Respond strictly with a JSON object in this exact format: {"isValid": boolean, "confidence": number, "reason": "string explaining the match or mismatch"}` }
+              ]
+            }
+          ]
+        });
+
+        const textResponse = response.text || "";
+        // Extract JSON from potential markdown blocks
+        const jsonMatch = textResponse.match(/\{[\s\S]*\}/);
+        if (jsonMatch) {
+          const result = JSON.parse(jsonMatch[0]);
+          if (result.isValid && result.confidence >= 0.8) {
+            isAutoApproved = true;
+            autoApproveReason = "AI Auto-Verified: " + result.reason;
+            console.log("AI Auto-KYC Success:", result);
+          } else {
+            console.log("AI Auto-KYC Failed:", result);
+          }
+        }
+      } catch (aiError) {
+        console.error("AI Auto-KYC Error:", aiError);
+      }
+    }
+
     const updatePayload: any = {
-      status: "pending",
+      status: isAutoApproved ? "approved" : "pending",
       rejectionReason: null,
     };
 
@@ -134,12 +178,19 @@ export async function POST(req: NextRequest) {
       2 // documents step completed
     );
 
-    user.vendorStatus = "pending";
+    user.vendorStatus = isAutoApproved ? "approved" : "pending";
+    if (isAutoApproved) {
+      user.vendorApprovedAt = new Date();
+    }
+    
     await user.save();
 
     return NextResponse.json({
       success: true,
-      message: "Documents submitted successfully",
+      message: isAutoApproved 
+        ? "Documents submitted and instantly auto-verified by AI!" 
+        : "Documents submitted successfully. Waiting for Admin review.",
+      autoApproved: isAutoApproved,
     });
   } catch (error) {
     console.error("POST DOCUMENT ERROR:", error);

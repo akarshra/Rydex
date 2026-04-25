@@ -55,7 +55,7 @@ export default function AdminVendorReviewPage() {
 
   if (loading)
     return (
-      <div className="min-h-screen grid place-items-center text-gray-500">
+      <div className="min-h-screen grid place-items-center text-slate-400">
         Loading vendor review…
       </div>
     );
@@ -63,21 +63,21 @@ export default function AdminVendorReviewPage() {
   if (!data) return null;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-100 to-gray-200">
+    <div className="min-h-screen bg-slate-950 text-white">
 
       {/* ================= HEADER ================= */}
-      <header className="sticky top-0 z-40 backdrop-blur-xl bg-white/70 border-b">
+      <header className="sticky top-0 z-40 backdrop-blur-xl bg-slate-950/80 border-white/10 border-white/10">
         <div className="max-w-7xl mx-auto px-4 h-16 flex items-center gap-4">
           <button
             onClick={() => router.back()}
-            className="w-10 h-10 rounded-full border flex items-center justify-center hover:bg-gray-100 transition"
+            className="w-10 h-10 rounded-full border-white/10 border flex items-center justify-center hover:bg-slate-800 transition"
           >
             <ArrowLeft size={18} />
           </button>
 
           <div className="flex-1">
             <p className="font-semibold text-lg">{data.name}</p>
-            <p className="text-xs text-gray-500">{data.email}</p>
+            <p className="text-xs text-slate-400">{data.email}</p>
           </div>
 
           <StatusBadge status={data.vendorStatus} />
@@ -119,28 +119,28 @@ export default function AdminVendorReviewPage() {
             <motion.div
               initial={{ opacity: 0, y: 30 }}
               animate={{ opacity: 1, y: 0 }}
-              className="bg-white rounded-[32px] p-8 shadow-xl space-y-6"
+              className="bg-slate-900/60 border-white/10 border-white/10 text-white rounded-[32px] p-8 shadow-xl space-y-6"
             >
               <div className="flex items-center gap-2 font-semibold">
                 <ShieldCheck size={18} />
                 Admin Decision
               </div>
 
-              <p className="text-sm text-gray-500">
+              <p className="text-sm text-slate-400">
                 Verify documents carefully before approving.
               </p>
 
               <div className="flex flex-col gap-4">
                 <button
                   onClick={() => setShowApprove(true)}
-                  className="py-3 rounded-2xl bg-gradient-to-r from-black to-gray-800 text-white font-semibold hover:opacity-90 transition"
+                  className="py-3 rounded-2xl bg-gradient-to-r from-sky-600 to-indigo-600 text-white hover:from-sky-500 hover:to-indigo-500 font-semibold hover:opacity-90 transition"
                 >
                   Approve Vendor
                 </button>
 
                 <button
                   onClick={() => setShowReject(true)}
-                  className="py-3 rounded-2xl border font-semibold hover:bg-gray-100 transition"
+                  className="py-3 rounded-2xl border-white/10 border font-semibold hover:bg-slate-800 transition"
                 >
                   Reject Vendor
                 </button>
@@ -180,7 +180,7 @@ function AnimatedCard({ title, icon, children }: any) {
   return (
     <motion.div
       whileHover={{ y: -4 }}
-      className="bg-white rounded-[32px] p-8 shadow-xl space-y-6"
+      className="bg-slate-900/60 border-white/10 border-white/10 text-white rounded-[32px] p-8 shadow-xl space-y-6"
     >
       <div className="flex items-center gap-2 font-semibold">
         {icon}
@@ -196,13 +196,13 @@ function DocPreview({ label, url }: any) {
   const isPdf = url?.endsWith(".pdf");
 
   return (
-    <div className="bg-gray-50 rounded-2xl border overflow-hidden shadow-sm">
-      <div className="px-4 py-2 border-b text-sm font-semibold">
+    <div className="bg-slate-900/40 rounded-2xl border-white/10 border overflow-hidden shadow-sm">
+      <div className="px-4 py-2 border-white/10 border-b text-sm font-semibold">
         {label}
       </div>
 
-      <div className="h-52 flex items-center justify-center bg-white">
-        {!url && <span className="text-xs text-gray-400">Not uploaded</span>}
+      <div className="h-52 flex items-center justify-center bg-slate-900/60 border-white/10 border-white/10 text-white">
+        {!url && <span className="text-xs text-slate-500">Not uploaded</span>}
 
         {isImage && (
           <img src={url} className="w-full h-full object-cover" />
@@ -215,7 +215,7 @@ function DocPreview({ label, url }: any) {
         <a
           href={url}
           target="_blank"
-          className="block text-center text-xs py-2 font-medium hover:bg-gray-100"
+          className="block text-center text-xs py-2 font-medium hover:bg-slate-800"
         >
           Open full document
         </a>
@@ -229,7 +229,7 @@ function ConfirmModal({ open, title, description, confirmText, loading, onClose,
     <AnimatePresence>
       {open && (
         <motion.div
-          className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center px-4"
+          className="fixed inset-0 z-50 bg-sky-600 hover:bg-sky-500/60 backdrop-blur-sm flex items-center justify-center px-4"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
@@ -237,19 +237,19 @@ function ConfirmModal({ open, title, description, confirmText, loading, onClose,
           <motion.div
             initial={{ scale: 0.9 }}
             animate={{ scale: 1 }}
-            className="bg-white rounded-3xl p-6 w-full max-w-sm"
+            className="bg-slate-900/60 border-white/10 border-white/10 text-white rounded-3xl p-6 w-full max-w-sm"
           >
             <h2 className="text-lg font-bold">{title}</h2>
-            <p className="text-sm text-gray-500 mt-2">{description}</p>
+            <p className="text-sm text-slate-400 mt-2">{description}</p>
 
             <div className="flex gap-3 mt-6">
-              <button onClick={onClose} className="flex-1 py-2 rounded-xl border">
+              <button onClick={onClose} className="flex-1 py-2 rounded-xl border-white/10 border">
                 Cancel
               </button>
               <button
                 onClick={onConfirm}
                 disabled={loading}
-                className="flex-1 py-2 rounded-xl bg-black text-white"
+                className="flex-1 py-2 rounded-xl bg-sky-600 hover:bg-sky-500 text-white"
               >
                 {confirmText}
               </button>
@@ -271,7 +271,7 @@ function RejectModal({ open, reason, setReason, loading, onClose, onConfirm }: a
           placeholder="Enter rejection reason (required)"
           value={reason}
           onChange={(e) => setReason(e.target.value)}
-          className="w-full mt-3 border rounded-xl p-3 text-sm"
+          className="w-full mt-3 border-white/10 border rounded-xl p-3 text-sm"
         />
       }
       confirmText="Reject"
@@ -285,7 +285,7 @@ function RejectModal({ open, reason, setReason, loading, onClose, onConfirm }: a
 function InfoRow({ label, value }: any) {
   return (
     <div className="flex justify-between text-sm">
-      <span className="text-gray-500">{label}</span>
+      <span className="text-slate-400">{label}</span>
       <span className="font-semibold">{value || "—"}</span>
     </div>
   );
@@ -293,10 +293,10 @@ function InfoRow({ label, value }: any) {
 
 function StatusBadge({ status }: any) {
   if (status === "approved")
-    return <Badge text="Approved" icon={<CheckCircle size={14} />} className="bg-green-100 text-green-700" />;
+    return <Badge text="Approved" icon={<CheckCircle size={14} />} className="bg-emerald-500/10 text-emerald-400 border border-emerald-500/20" />;
   if (status === "rejected")
-    return <Badge text="Rejected" icon={<XCircle size={14} />} className="bg-red-100 text-red-700" />;
-  return <Badge text="Pending" icon={<Clock size={14} />} className="bg-yellow-100 text-yellow-700" />;
+    return <Badge text="Rejected" icon={<XCircle size={14} />} className="bg-rose-500/10 text-rose-400 border border-rose-500/20" />;
+  return <Badge text="Pending" icon={<Clock size={14} />} className="bg-amber-500/10 text-amber-400 border border-amber-500/20" />;
 }
 
 function Badge({ text, icon, className }: any) {
