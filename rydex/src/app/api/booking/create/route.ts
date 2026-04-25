@@ -22,9 +22,13 @@ export async function POST(req: Request) {
     pickupLocation,
     dropLocation,
     fare,
-    mobileNumber, // This is user's mobile number from frontend
+    mobileNumber,
     promoCode,
     discountAmount,
+    stops,
+    dispatchTier,
+    ridePreferencesSnapshot,
+    fareSplit,
   } = body;
 
   if (
@@ -70,11 +74,15 @@ export async function POST(req: Request) {
     pickupLocation,
     dropLocation,
     fare,
-    userMobileNumber: mobileNumber, // Mobile number from frontend (user's)
-    driverMobileNumber: driver.mobileNumber, // Mobile number from database (driver's)
+    userMobileNumber: mobileNumber,
+    driverMobileNumber: driver.mobileNumber,
     promoCode,
     discountAmount,
     status: "requested",
+    stops: stops || [],
+    dispatchTier: dispatchTier || "standard",
+    ridePreferencesSnapshot: ridePreferencesSnapshot || undefined,
+    fareSplit: fareSplit || undefined,
   });
   
   await axios.post(

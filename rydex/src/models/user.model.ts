@@ -191,6 +191,28 @@ const UserSchema = new Schema<IUser>(
       type: Number,
       default: 0,
     },
+
+    referralCode: {
+      type: String,
+      unique: true,
+      sparse: true,
+      uppercase: true,
+      trim: true,
+      index: true,
+    },
+
+    referredBy: {
+      type: Schema.Types.ObjectId,
+      ref: "User",
+      sparse: true,
+    },
+
+    enterpriseId: {
+      type: Schema.Types.ObjectId,
+      ref: "EnterpriseAccount",
+      sparse: true,
+      index: true,
+    },
   },
   { timestamps: true }
 );
