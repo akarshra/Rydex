@@ -3,6 +3,8 @@
 import { useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { MessageSquare, X, Send, Bot, User } from "lucide-react";
+import { useSession } from "next-auth/react";
+import { usePathname } from "next/navigation";
 
 export default function ChatWidget() {
   const [isOpen, setIsOpen] = useState(false);
@@ -10,6 +12,9 @@ export default function ChatWidget() {
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  
+  const { data: session } = useSession();
+  const pathname = usePathname();
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -30,7 +35,12 @@ export default function ChatWidget() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ 
           message: userMessage.content,
-          history: messages 
+          history: messages,
+          context: {
+            userName: session?.user?.name || "Guest",
+            userRole: session?.user?.role || "visitor",
+            currentPage: pathname
+          }
         }),
       });
       const data = await res.json();

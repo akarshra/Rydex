@@ -7,14 +7,16 @@ import {
   CheckCircle2, ChevronRight
 } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
-import { Calendar } from "lucide-react";
+import { useState, useEffect } from "react";
+import { Calendar, Home, Briefcase, Plus, X, Wind, Music, VolumeX, Luggage, Baby, Dog } from "lucide-react";
 
 type Place = {
   id: string; name: string; city?: string; state?: string;
   country?: string; countrycode?: string; lat: number; lng: number;
 };
 type VehicleType = "bike" | "auto" | "car" | "loading" | "truck";
+type DispatchTier = "standard" | "priority" | "wait_save";
+type Stop = { address: string; lat: number | null; lng: number | null; results: Place[] };
 
 const VEHICLES = [
   { id: "bike",    label: "Bike",    Icon: Bike,  desc: "Quick & affordable" },
@@ -23,6 +25,12 @@ const VEHICLES = [
   { id: "loading", label: "Loading", Icon: Truck, desc: "Small cargo"        },
   { id: "truck",   label: "Truck",   Icon: Truck, desc: "Heavy transport"    },
 ];
+
+const TIER_CONFIG: Record<DispatchTier, { label: string; desc: string; multiplier: number }> = {
+  standard: { label: "Standard", desc: "Regular dispatch", multiplier: 1 },
+  priority: { label: "Priority", desc: "Fastest dispatch (+15%)", multiplier: 1.15 },
+  wait_save: { label: "Wait & Save", desc: "Discount for waiting (-20%)", multiplier: 0.8 },
+};
 
 const stepVariants = {
   hidden:  { opacity: 0, y: 16 },
@@ -49,6 +57,18 @@ export default function BookPage() {
   const [scheduleMode, setScheduleMode] = useState(false);
   const [scheduledTime, setScheduledTime] = useState("");
   const [submitting, setSubmitting] = useState(false);
+
+  /* Premium states */
+  const [savedPlaces, setSavedPlaces] = useState<any[]>([]);
+  const [stops, setStops] = useState<Stop[]>([]);
+  const [dispatchTier, setDispatchTier] = useState<DispatchTier>("standard");
+  const [ridePreferences, setRidePreferences] = useState<any>(null);
+  const [showPreferences, setShowPreferences] = useState(false);
+
+  useEffect(() => {
+    fetch("/api/saved-places").then(r => r.json()).then(d => setSavedPlaces(d.places || []));
+    fetch("/api/ride-preferences").then(r => r.json()).then(d => setRidePreferences(d.preferences || null));
+  }, []);
 
   const canContinue = !!(pickup && drop && vehicle && mobile && pickupLat && pickupLng && dropLat && dropLng && (!scheduleMode || scheduledTime));
 
@@ -104,7 +124,24 @@ export default function BookPage() {
         dropLat:    String(dropLat),
         dropLng:    String(dropLng),
         mobileNumber: mobile,
+        dispatchTier,
       });
+      if (stops.length > 0) {
+        url.set("stops", JSON.stringify(stops.filter(s => s.address && s.lat && s.lng).map(s => ({
+          address: s.address,
+          location: { type: "Point", coordinates: [s.lng, s.lat] }
+        }))));
+      }
+      if (ridePreferences) {
+        url.set("ridePrefs", JSON.stringify({
+          temperature: ridePreferences.temperature,
+          musicGenre: ridePreferences.musicGenre,
+          quietRide: ridePreferences.quietRide,
+          luggageAssistance: ridePreferences.luggageAssistance,
+          childSeat: ridePreferences.childSeat,
+          petFriendly: ridePreferences.petFriendly,
+        }));
+      }
       router.push("/search?" + url.toString());
     }
   };
@@ -300,6 +337,27 @@ export default function BookPage() {
                 <p className="text-xs font-bold text-zinc-500 uppercase tracking-widest">Route</p>
               </div>
 
+              {/* Saved Places Quick Select */}
+              {savedPlaces.length > 0 && (
+                <div className="flex gap-2 mb-2">
+                  {savedPlaces.filter((sp: any) => sp.label === "home" || sp.label === "work").map((place: any) => (
+                    <button
+                      key={place._id}
+                      onClick={() => {
+                        setPickup(place.address);
+                        setPickupLat(place.lat);
+                        setPickupLng(place.lng);
+                        setPickupCountry(null);
+                      }}
+                      className="flex items-center gap-1.5 bg-zinc-100 hover:bg-zinc-200 border border-zinc-200 rounded-lg px-3 py-1.5 text-xs font-semibold text-zinc-700 transition-colors"
+                    >
+                      {place.label === "home" ? <Home size={12} /> : <Briefcase size={12} />}
+                      {place.name}
+                    </button>
+                  ))}
+                </div>
+              )}
+
               {/* Route visual connector */}
               <div className="bg-zinc-50 border border-zinc-200 rounded-2xl overflow-visible">
 
@@ -359,6 +417,81 @@ export default function BookPage() {
                   </AnimatePresence>
                 </div>
 
+                {/* MULTI-STOP INPUTS */}
+                <AnimatePresence>
+                  {stops.map((stop, idx) => (
+                    <motion.div
+                      key={idx}
+                      initial={{ opacity: 0, height: 0 }}
+                      animate={{ opacity: 1, height: "auto" }}
+                      exit={{ opacity: 0, height: 0 }}
+                      className="relative z-10"
+                    >
+                      <div className="h-px bg-zinc-200 mx-4" />
+                      <div className="flex items-center gap-3 px-4 py-3.5 focus-within:bg-white transition-colors">
+                        <div className="flex-shrink-0">
+                          <div className="w-3 h-3 rounded-full bg-zinc-400 border-2 border-white shadow" />
+                        </div>
+                        <input
+                          value={stop.address}
+                          onChange={e => {
+                            const newStops = [...stops];
+                            newStops[idx] = { ...stop, address: e.target.value };
+                            setStops(newStops);
+                            searchAddress(e.target.value, (results) => {
+                              const ns = [...stops];
+                              ns[idx] = { ...stop, results };
+                              setStops(ns);
+                            });
+                          }}
+                          placeholder={`Stop ${idx + 1}`}
+                          className="flex-1 bg-transparent text-sm font-semibold text-zinc-900 placeholder:text-zinc-400 outline-none"
+                        />
+                        <button
+                          onClick={() => setStops(stops.filter((_, i) => i !== idx))}
+                          className="text-zinc-400 hover:text-red-500 transition-colors"
+                        >
+                          <X size={14} />
+                        </button>
+                      </div>
+                      {stop.results.length > 0 && (
+                        <motion.div
+                          initial={{ opacity: 0, y: -4 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          className="absolute left-0 right-0 top-full mt-1 bg-white border border-zinc-200 rounded-2xl shadow-xl max-h-40 overflow-y-auto z-50"
+                        >
+                          {stop.results.map((p, i) => (
+                            <button
+                              key={p.id}
+                              onClick={() => {
+                                const ns = [...stops];
+                                ns[idx] = { address: fmt(p), lat: p.lat, lng: p.lng, results: [] };
+                                setStops(ns);
+                              }}
+                              className="flex items-center gap-3 w-full px-4 py-2.5 text-left hover:bg-zinc-50 border-b border-zinc-100 last:border-0"
+                            >
+                              <MapPin size={12} className="text-zinc-400" />
+                              <span className="text-sm text-zinc-800 font-medium truncate">{fmt(p)}</span>
+                            </button>
+                          ))}
+                        </motion.div>
+                      )}
+                    </motion.div>
+                  ))}
+                </AnimatePresence>
+
+                {/* ADD STOP BUTTON */}
+                {stops.length < 2 && (
+                  <div className="px-4 py-2">
+                    <button
+                      onClick={() => setStops([...stops, { address: "", lat: null, lng: null, results: [] }])}
+                      className="flex items-center gap-1.5 text-xs font-semibold text-zinc-500 hover:text-zinc-900 transition-colors"
+                    >
+                      <Plus size={12} /> Add stop
+                    </button>
+                  </div>
+                )}
+
                 {/* SEPARATOR */}
                 <div className="h-px bg-zinc-200 mx-4" />
 
@@ -412,11 +545,99 @@ export default function BookPage() {
               </div>
             </motion.div>
 
-            {/* ══ STEP 4 — SCHEDULE (Optional) ══ */}
-            <motion.div variants={stepVariants} initial="hidden" animate="visible" transition={{ delay: 0.28 }}>
+            {/* ══ STEP 4 — DISPATCH TIER ══ */}
+            <motion.div variants={stepVariants} initial="hidden" animate="visible" transition={{ delay: 0.25 }}>
               <div className="flex items-center gap-2 mb-3">
                 <div className="w-5 h-5 rounded-full bg-zinc-900 flex items-center justify-center flex-shrink-0">
                   <span className="text-white text-[9px] font-black">4</span>
+                </div>
+                <p className="text-xs font-bold text-zinc-500 uppercase tracking-widest">Dispatch Option</p>
+              </div>
+              <div className="grid grid-cols-3 gap-2">
+                {(Object.keys(TIER_CONFIG) as DispatchTier[]).map((tier) => {
+                  const active = dispatchTier === tier;
+                  return (
+                    <button
+                      key={tier}
+                      onClick={() => setDispatchTier(tier)}
+                      className={`flex flex-col items-center justify-center py-3 px-2 rounded-xl text-xs font-semibold transition-all border ${
+                        active
+                          ? "bg-zinc-900 text-white border-zinc-900"
+                          : "bg-zinc-50 text-zinc-600 border-zinc-200 hover:border-zinc-400"
+                      }`}
+                    >
+                      <span className="font-bold">{TIER_CONFIG[tier].label}</span>
+                      <span className={`text-[10px] mt-0.5 ${active ? "text-zinc-300" : "text-zinc-400"}`}>{TIER_CONFIG[tier].desc}</span>
+                    </button>
+                  );
+                })}
+              </div>
+            </motion.div>
+
+            {/* ══ STEP 5 — RIDE PREFERENCES ══ */}
+            {ridePreferences && (
+              <motion.div variants={stepVariants} initial="hidden" animate="visible" transition={{ delay: 0.26 }}>
+                <button
+                  onClick={() => setShowPreferences(!showPreferences)}
+                  className="flex items-center justify-between w-full mb-3"
+                >
+                  <div className="flex items-center gap-2">
+                    <div className="w-5 h-5 rounded-full bg-zinc-900 flex items-center justify-center flex-shrink-0">
+                      <span className="text-white text-[9px] font-black">5</span>
+                    </div>
+                    <p className="text-xs font-bold text-zinc-500 uppercase tracking-widest">Ride Preferences</p>
+                  </div>
+                  <span className="text-xs font-semibold text-zinc-400">{showPreferences ? "Hide" : "Show"}</span>
+                </button>
+                <AnimatePresence>
+                  {showPreferences && (
+                    <motion.div
+                      initial={{ opacity: 0, height: 0 }}
+                      animate={{ opacity: 1, height: "auto" }}
+                      exit={{ opacity: 0, height: 0 }}
+                      className="overflow-hidden"
+                    >
+                      <div className="bg-zinc-50 border border-zinc-200 rounded-2xl p-4 space-y-2">
+                        <div className="flex items-center gap-2 text-xs text-zinc-600">
+                          <Wind size={14} /> Temperature: <span className="font-semibold capitalize">{ridePreferences.temperature}</span>
+                        </div>
+                        {ridePreferences.musicGenre && (
+                          <div className="flex items-center gap-2 text-xs text-zinc-600">
+                            <Music size={14} /> Music: <span className="font-semibold">{ridePreferences.musicGenre}</span>
+                          </div>
+                        )}
+                        {ridePreferences.quietRide && (
+                          <div className="flex items-center gap-2 text-xs text-zinc-600">
+                            <VolumeX size={14} /> <span className="font-semibold">Quiet ride requested</span>
+                          </div>
+                        )}
+                        {ridePreferences.luggageAssistance && (
+                          <div className="flex items-center gap-2 text-xs text-zinc-600">
+                            <Luggage size={14} /> <span className="font-semibold">Luggage assistance</span>
+                          </div>
+                        )}
+                        {ridePreferences.childSeat && (
+                          <div className="flex items-center gap-2 text-xs text-zinc-600">
+                            <Baby size={14} /> <span className="font-semibold">Child seat needed</span>
+                          </div>
+                        )}
+                        {ridePreferences.petFriendly && (
+                          <div className="flex items-center gap-2 text-xs text-zinc-600">
+                            <Dog size={14} /> <span className="font-semibold">Pet friendly</span>
+                          </div>
+                        )}
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </motion.div>
+            )}
+
+            {/* ══ STEP 6 — SCHEDULE (Optional) ══ */}
+            <motion.div variants={stepVariants} initial="hidden" animate="visible" transition={{ delay: 0.28 }}>
+              <div className="flex items-center gap-2 mb-3">
+                <div className="w-5 h-5 rounded-full bg-zinc-900 flex items-center justify-center flex-shrink-0">
+                  <span className="text-white text-[9px] font-black">6</span>
                 </div>
                 <p className="text-xs font-bold text-zinc-500 uppercase tracking-widest">Timing</p>
               </div>
