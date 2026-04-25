@@ -217,6 +217,79 @@ export default function AdminDashboard() {
 
         <AdminEarningsChart />
 
+        {/* ===== REVIEW QUEUE TABS ===== */}
+        <section className="space-y-4">
+          <div className="flex items-center justify-between gap-4">
+            <div>
+              <p className="text-xs uppercase tracking-[0.35em] text-sky-300/80">Operational hub</p>
+              <h2 className="text-2xl font-bold text-white">Review queues</h2>
+            </div>
+          </div>
+
+          <div className="flex flex-wrap gap-2">
+            <TabButton
+              active={activeTab === "kyc"}
+              onClick={() => setActiveTab("kyc")}
+              icon={<Video size={16} />}
+              count={videoKycReviews.length}
+            >
+              Video KYC
+            </TabButton>
+            <TabButton
+              active={activeTab === "vendor"}
+              onClick={() => setActiveTab("vendor")}
+              icon={<Users size={16} />}
+              count={vendorReviews.length}
+            >
+              Vendors
+            </TabButton>
+            <TabButton
+              active={activeTab === "vehicle"}
+              onClick={() => setActiveTab("vehicle")}
+              icon={<Truck size={16} />}
+              count={vehicleReviews.length}
+            >
+              Vehicles
+            </TabButton>
+          </div>
+
+          <AnimatePresence mode="wait">
+            {activeTab === "kyc" && (
+              <motion.div
+                key="kyc"
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -10 }}
+                transition={{ duration: 0.2 }}
+              >
+                <ContentList data={videoKycReviews} type="kyc" />
+              </motion.div>
+            )}
+            {activeTab === "vendor" && (
+              <motion.div
+                key="vendor"
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -10 }}
+                transition={{ duration: 0.2 }}
+              >
+                <ContentList data={vendorReviews} type="vendor" />
+              </motion.div>
+            )}
+            {activeTab === "vehicle" && (
+              <motion.div
+                key="vehicle"
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -10 }}
+                transition={{ duration: 0.2 }}
+              >
+                <ContentList data={vehicleReviews} type="vehicle" />
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </section>
+
         <section className="grid gap-4">
           <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
             <div>
