@@ -13,10 +13,23 @@ export async function POST(
   if (!booking)
     return NextResponse.json({ message: "Not found" }, { status: 404 });
 
-booking.status = "completed";
-booking.completedAt = new Date();
+  booking.status = "completed";
+  booking.completedAt = new Date();
 
   await booking.save();
+
+  // Loyalty Program: 1 point for every 10 INR
+  try {
+    const User = (await import("@/models/user.model")).default;
+    const earnedPoints = Math.floor(booking.fare / 10);
+    if (earnedPoints > 0 && booking.user) {
+      await User.findByIdAndUpdate(booking.user, {
+        $inc: { rewardPoints: earnedPoints }
+      });
+    }
+  } catch (error) {
+    console.error("Failed to award points:", error);
+  }
 
   return NextResponse.json({ success: true });
 }

@@ -1,7 +1,8 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { motion } from "framer-motion";
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
 import {
   IndianRupee,
   Loader2,
@@ -14,6 +15,7 @@ import {
   User,
   Phone,
 } from "lucide-react";
+import RatingModal from "@/components/RatingModal";
 
 interface Booking {
   _id: string;
@@ -41,6 +43,8 @@ export default function PartnerBookingsPage() {
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [loading, setLoading] = useState(true);
   const [statusFilter, setStatusFilter] = useState("All");
+  const [ratingModalOpen, setRatingModalOpen] = useState(false);
+  const [selectedBookingId, setSelectedBookingId] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchBookings = async () => {
@@ -104,6 +108,27 @@ export default function PartnerBookingsPage() {
     ? bookings 
     : bookings.filter(b => b.status === statusFilter.toLowerCase());
 
+  const analyticsData = useMemo(() => {
+    const dailyData: Record<string, { dateObj: Date, rides: number, earnings: number }> = {};
+    bookings.forEach(b => {
+      if (b.status === 'completed') {
+        const d = new Date(b.createdAt);
+        const dateStr = d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+        if (!dailyData[dateStr]) dailyData[dateStr] = { dateObj: d, rides: 0, earnings: 0 };
+        dailyData[dateStr].rides += 1;
+        dailyData[dateStr].earnings += b.fare;
+      }
+    });
+    return Object.values(dailyData).sort((a, b) => a.dateObj.getTime() - b.dateObj.getTime()).map(d => ({
+      date: d.dateObj.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
+      rides: d.rides,
+      earnings: d.earnings
+    }));
+  }, [bookings]);
+
+  const totalEarnings = analyticsData.reduce((sum, day) => sum + day.earnings, 0);
+  const totalCompletedRides = analyticsData.reduce((sum, day) => sum + day.rides, 0);
+
   return (
     <div className="min-h-screen bg-gray-50">
       
@@ -116,7 +141,7 @@ export default function PartnerBookingsPage() {
                 <Car className="w-5 h-5 text-blue-600" />
               </div>
               <div>
-                <h1 className="text-2xl font-semibold text-gray-900">Partner Bookings</h1>
+                <h1 className="text-2xl font-semibold text-gray-900">Partner Dashboard & Bookings</h1>
                 <p className="text-gray-500 text-sm mt-1">
                   {bookings.length} {bookings.length === 1 ? 'ride' : 'rides'} assigned to you
                 </p>
@@ -130,6 +155,42 @@ export default function PartnerBookingsPage() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
         <div className="max-w-3xl mx-auto">
           
+          {/* ANALYTICS DASHBOARD */}
+          {!loading && bookings.length > 0 && (
+            <div className="mb-8">
+              <div className="grid grid-cols-2 gap-4 mb-4">
+                <div className="bg-white p-5 rounded-xl border border-gray-200 shadow-sm">
+                  <p className="text-gray-500 text-sm font-medium mb-1">Total Earnings</p>
+                  <h3 className="text-3xl font-black text-gray-900">₹{totalEarnings}</h3>
+                </div>
+                <div className="bg-white p-5 rounded-xl border border-gray-200 shadow-sm">
+                  <p className="text-gray-500 text-sm font-medium mb-1">Completed Rides</p>
+                  <h3 className="text-3xl font-black text-gray-900">{totalCompletedRides}</h3>
+                </div>
+              </div>
+
+              {analyticsData.length > 0 && (
+                <div className="bg-white p-6 rounded-xl border border-gray-200 shadow-sm mb-6">
+                  <h3 className="font-semibold text-gray-900 mb-6">Earnings Trend (Completed Rides)</h3>
+                  <div className="h-64 w-full">
+                    <ResponsiveContainer width="100%" height="100%">
+                      <LineChart data={analyticsData}>
+                        <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f0f0f0" />
+                        <XAxis dataKey="date" axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: '#888' }} />
+                        <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: '#888' }} tickFormatter={(val) => `₹${val}`} />
+                        <Tooltip
+                          contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 20px rgba(0,0,0,0.08)' }}
+                          formatter={(value: number) => [`₹${value}`, "Earnings"]}
+                        />
+                        <Line type="monotone" dataKey="earnings" stroke="#2563eb" strokeWidth={3} dot={{ r: 4, fill: '#2563eb', strokeWidth: 2, stroke: '#fff' }} activeDot={{ r: 6 }} />
+                      </LineChart>
+                    </ResponsiveContainer>
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+
           {/* FILTER BAR */}
           <div className="flex justify-between items-center mb-6">
             <div className="text-sm text-gray-500">
@@ -286,6 +347,17 @@ export default function PartnerBookingsPage() {
                           <ChevronRight className="w-4 h-4" />
                         </button>
                       </div>}
+                      
+                      {booking.status === "completed" && (
+                        <div className="flex items-center gap-2">
+                          <button
+                            onClick={() => { setSelectedBookingId(booking._id); setRatingModalOpen(true); }}
+                            className="flex items-center gap-1 text-sm font-medium text-amber-600 hover:text-amber-700 bg-amber-50 hover:bg-amber-100 px-4 py-1.5 rounded-lg transition-colors"
+                          >
+                            <span>Rate Rider</span>
+                          </button>
+                        </div>
+                      )}
                      
                     </div>
                   </div>
@@ -295,6 +367,14 @@ export default function PartnerBookingsPage() {
           )}
         </div>
       </div>
+
+      <RatingModal
+        isOpen={ratingModalOpen}
+        onClose={() => setRatingModalOpen(false)}
+        bookingId={selectedBookingId || ""}
+        role="vendor"
+        onSuccess={() => alert("Rating submitted successfully!")}
+      />
     </div>
   );
 }

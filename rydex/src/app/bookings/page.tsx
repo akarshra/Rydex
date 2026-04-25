@@ -13,6 +13,7 @@ import {
   Navigation
 } from "lucide-react";
 import axios from "axios";
+import RatingModal from "@/components/RatingModal";
 
 interface Booking {
   _id: string;
@@ -38,6 +39,8 @@ export default function MyBookingsPage() {
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [loading, setLoading] = useState(true);
   const [statusFilter, setStatusFilter] = useState("All");
+  const [ratingModalOpen, setRatingModalOpen] = useState(false);
+  const [selectedBookingId, setSelectedBookingId] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchBookings = async () => {
@@ -285,6 +288,14 @@ export default function MyBookingsPage() {
                               <Navigation className="w-4 h-4 text-white group-hover:scale-110 transition-transform" />
                             </button>
                           )}
+                          {booking.status === "completed" && (
+                            <button
+                              onClick={() => { setSelectedBookingId(booking._id); setRatingModalOpen(true); }}
+                              className="flex items-center h-10 gap-2 text-xs font-bold text-white bg-amber-500/20 hover:bg-amber-500/30 px-5 rounded-full transition-colors border border-amber-500/20"
+                            >
+                              <span>Rate Ride</span>
+                            </button>
+                          )}
                           <button
                             onClick={() => window.location.href = `/ride/${booking._id}`}
                             className="flex items-center h-10 gap-2 text-xs font-bold text-white bg-white/10 hover:bg-white/20 px-5 rounded-full transition-colors border border-white/5"
@@ -302,6 +313,14 @@ export default function MyBookingsPage() {
           )}
         </div>
       </div>
+
+      <RatingModal
+        isOpen={ratingModalOpen}
+        onClose={() => setRatingModalOpen(false)}
+        bookingId={selectedBookingId || ""}
+        role="rider"
+        onSuccess={() => alert("Rating submitted successfully!")}
+      />
     </div>
   );
 }

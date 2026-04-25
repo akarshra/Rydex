@@ -1,11 +1,28 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { Activity, CarFront, Users, Navigation2, CheckCircle2, Map as MapIcon, XCircle } from "lucide-react";
-import { useState } from "react";
+import { Activity, CarFront, Users, Navigation2, CheckCircle2, Map as MapIcon, XCircle, Zap, RefreshCw } from "lucide-react";
+import { useState, useEffect } from "react";
 
 export default function AdminOperations() {
   const [activeTab, setActiveTab] = useState("map");
+  const [surges, setSurges] = useState<any[]>([]);
+  const [calculating, setCalculating] = useState(false);
+
+  useEffect(() => {
+    fetch("/api/admin/surge/active").then(r => r.json()).then(d => {
+      if (d.success) setSurges(d.surges);
+    });
+  }, []);
+
+  const calculateSurge = async () => {
+    setCalculating(true);
+    await fetch("/api/admin/surge/calculate", { method: "POST" });
+    const r = await fetch("/api/admin/surge/active");
+    const d = await r.json();
+    if (d.success) setSurges(d.surges);
+    setCalculating(false);
+  };
 
   return (
     <div className="p-6 md:p-10 max-w-7xl mx-auto space-y-8 pb-20">
@@ -31,7 +48,7 @@ export default function AdminOperations() {
         {[
           { label: "Active Trips", value: "24", icon: <Navigation2 size={18} />, color: "text-sky-400", bg: "bg-sky-500/10 border-sky-500/20" },
           { label: "Idle Vehicles", value: "15", icon: <CarFront size={18} />, color: "text-emerald-400", bg: "bg-emerald-500/10 border-emerald-500/20" },
-          { label: "Riders Online", value: "142", icon: <Users size={18} />, color: "text-purple-400", bg: "bg-purple-500/10 border-purple-500/20" },
+          { label: "Surge Zones", value: surges.length.toString(), icon: <Zap size={18} />, color: "text-rose-400", bg: "bg-rose-500/10 border-rose-500/20" },
           { label: "Cancellations", value: "2", icon: <XCircle size={18} />, color: "text-red-400", bg: "bg-red-500/10 border-red-500/20" },
         ].map((stat, i) => (
           <motion.div
@@ -79,17 +96,60 @@ export default function AdminOperations() {
             </div>
           </div>
 
-          <div className="flex-1 relative z-0 bg-slate-950/40 flex items-center justify-center">
-            {/* Placeholder for actual Map Integration (e.g. Mapbox or Leaflet) */}
-            <div className="absolute inset-0 flex items-center justify-center flex-col gap-4">
-              <div className="w-32 h-32 rounded-full bg-sky-500/10 flex items-center justify-center relative">
-                <div className="absolute inset-0 rounded-full border border-sky-500/20 animate-ping" style={{ animationDuration: '3s' }} />
-                <div className="w-16 h-16 rounded-full bg-sky-500/20 flex items-center justify-center">
-                  <Navigation2 size={24} className="text-sky-400 rotate-45" />
+          <div className="flex-1 relative z-0 bg-slate-950/40 flex flex-col p-6">
+            {activeTab === "heat" ? (
+              <div className="h-full w-full flex flex-col">
+                <div className="flex items-center justify-between mb-6">
+                  <h3 className="text-white font-bold text-lg">Active Surge Zones</h3>
+                  <button 
+                    onClick={calculateSurge}
+                    disabled={calculating}
+                    className="flex items-center gap-2 bg-rose-600 hover:bg-rose-500 text-white px-4 py-2 rounded-xl text-sm font-bold transition-colors disabled:opacity-50"
+                  >
+                    <RefreshCw size={16} className={calculating ? "animate-spin" : ""} />
+                    {calculating ? "Calculating..." : "Recalculate Surge"}
+                  </button>
                 </div>
+                
+                {surges.length === 0 ? (
+                  <div className="flex-1 flex flex-col items-center justify-center text-slate-500">
+                    <Zap size={48} className="mb-4 opacity-20" />
+                    <p>No active surge zones right now.</p>
+                  </div>
+                ) : (
+                  <div className="grid gap-4 flex-1 overflow-y-auto pr-2 custom-scrollbar">
+                    {surges.map(s => (
+                      <div key={s._id} className="bg-slate-900 border border-rose-500/30 rounded-2xl p-5 flex items-center justify-between">
+                        <div>
+                          <div className="flex items-center gap-2 mb-1">
+                            <span className="text-xs uppercase tracking-wider text-rose-400 font-black px-2 py-0.5 rounded-md bg-rose-500/10">
+                              {s.demandLevel} Demand
+                            </span>
+                            <span className="text-slate-400 text-xs font-semibold capitalize">{s.vehicleType}</span>
+                          </div>
+                          <p className="text-white font-bold text-lg">Lat: {s.location.coordinates[1]}, Lng: {s.location.coordinates[0]}</p>
+                          <p className="text-slate-400 text-sm mt-1">{s.pendingRequests} Pending • {s.availableVehicles} Available</p>
+                        </div>
+                        <div className="bg-rose-500 text-white rounded-xl px-4 py-3 text-center">
+                          <p className="text-xs uppercase font-bold tracking-widest mb-0.5 opacity-80">Multiplier</p>
+                          <p className="text-2xl font-black">{s.surgeFactor}x</p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
-              <p className="text-slate-400 text-sm font-medium">Live Map Engine Connected</p>
-            </div>
+            ) : (
+              <div className="absolute inset-0 flex items-center justify-center flex-col gap-4">
+                <div className="w-32 h-32 rounded-full bg-sky-500/10 flex items-center justify-center relative">
+                  <div className="absolute inset-0 rounded-full border border-sky-500/20 animate-ping" style={{ animationDuration: '3s' }} />
+                  <div className="w-16 h-16 rounded-full bg-sky-500/20 flex items-center justify-center">
+                    <Navigation2 size={24} className="text-sky-400 rotate-45" />
+                  </div>
+                </div>
+                <p className="text-slate-400 text-sm font-medium">Live Map Engine Connected</p>
+              </div>
+            )}
           </div>
         </motion.div>
 

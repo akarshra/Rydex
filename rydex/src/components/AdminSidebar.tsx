@@ -7,25 +7,32 @@ import {
   LayoutDashboard,
   Map,
   Users,
-  DollarSign,
+  IndianRupee,
   ShieldCheck,
   CarFront,
   UsersRound,
   LogOut,
+  Ticket,
 } from "lucide-react";
+import { signOut } from "next-auth/react";
+import { useDispatch } from "react-redux";
+import { AppDispatch } from "@/redux/store";
+import { setUserData } from "@/redux/userSlice";
 
 const NAV_ITEMS = [
   { label: "Dashboard", href: "/admin/dashboard", icon: <LayoutDashboard size={20} /> },
   { label: "Live Operations", href: "/admin/operations", icon: <Map size={20} /> },
   { label: "Customers", href: "/admin/customers", icon: <Users size={20} /> },
-  { label: "Finance", href: "/admin/finance", icon: <DollarSign size={20} /> },
+  { label: "Finance", href: "/admin/finance", icon: <IndianRupee size={20} /> },
   { label: "Compliance", href: "/admin/compliance", icon: <ShieldCheck size={20} /> },
   { label: "Vehicles", href: "/admin/vehicles", icon: <CarFront size={20} /> },
   { label: "Vendors", href: "/admin/vendors", icon: <UsersRound size={20} /> },
+  { label: "Promos", href: "/admin/promos", icon: <Ticket size={20} /> },
 ];
 
 export default function AdminSidebar() {
   const pathname = usePathname();
+  const dispatch = useDispatch<AppDispatch>();
 
   return (
     <aside className="w-64 flex-shrink-0 min-h-screen bg-slate-950/90 backdrop-blur-2xl border-r border-white/10 sticky top-0 flex flex-col z-50">
@@ -68,6 +75,10 @@ export default function AdminSidebar() {
       <div className="p-4 border-t border-white/10">
         <motion.button
           whileHover={{ x: 4 }}
+          onClick={async () => {
+            dispatch(setUserData(null));
+            await signOut({ callbackUrl: "/" });
+          }}
           className="flex items-center gap-3 px-3 py-3 w-full rounded-xl text-slate-400 hover:bg-red-500/10 hover:text-red-400 transition-colors"
         >
           <LogOut size={20} />

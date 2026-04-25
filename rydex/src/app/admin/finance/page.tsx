@@ -1,7 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { DollarSign, TrendingUp, Tag, Wallet, ArrowUpRight } from "lucide-react";
+import { IndianRupee, TrendingUp, Tag, Wallet, ArrowUpRight } from "lucide-react";
 
 export default function AdminFinance() {
   return (
@@ -23,10 +23,10 @@ export default function AdminFinance() {
         <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="p-6 rounded-[2rem] bg-slate-900/50 border border-emerald-500/20 flex flex-col justify-between">
           <div>
             <div className="w-10 h-10 rounded-xl bg-emerald-500/10 flex items-center justify-center text-emerald-400 mb-4">
-              <DollarSign size={20} />
+              <IndianRupee size={20} />
             </div>
             <p className="text-sm text-slate-400 font-medium mb-1">Total Revenue (30d)</p>
-            <h2 className="text-4xl font-extrabold text-white">$124,500</h2>
+            <h2 className="text-4xl font-extrabold text-white">₹1,24,500</h2>
           </div>
           <div className="mt-6 flex items-center gap-2 text-emerald-400 text-sm font-semibold">
             <TrendingUp size={16} /> +14.5% vs last month
@@ -39,7 +39,7 @@ export default function AdminFinance() {
               <Wallet size={20} />
             </div>
             <p className="text-sm text-slate-400 font-medium mb-1">Pending Payouts</p>
-            <h2 className="text-4xl font-extrabold text-white">$32,100</h2>
+            <h2 className="text-4xl font-extrabold text-white">₹32,100</h2>
           </div>
           <div className="mt-6 text-slate-500 text-sm">
             Next settlement: Tomorrow, 9 AM

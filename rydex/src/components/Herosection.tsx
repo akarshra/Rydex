@@ -2,11 +2,11 @@
 
 import { RootState } from "@/redux/store";
 import { motion, useScroll, useTransform } from "framer-motion";
-import { Bike, Bus, Car, ShieldCheck, Sparkles, Truck, ArrowRight, MapPin, Navigation, Search } from "lucide-react";
+import { Bike, Bus, Car, ShieldCheck, Sparkles, Truck, ArrowRight, MapPin, Navigation, Search, Loader2 } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useSelector } from "react-redux";
-import { useRef } from "react";
+import { useRef, useState } from "react";
 
 export default function HeroSection({
   onAuthRequired,
@@ -30,6 +30,44 @@ export default function HeroSection({
       return;
     }
     router.push("/book");
+  };
+
+  const [aiQuery, setAiQuery] = useState("");
+  const [aiLoading, setAiLoading] = useState(false);
+
+  const handleAIBooking = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!userData) {
+      onAuthRequired();
+      return;
+    }
+    if (!aiQuery.trim() || aiLoading) return;
+    setAiLoading(true);
+
+    try {
+      const res = await fetch("/api/ai/extract-booking", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ prompt: aiQuery })
+      });
+      const data = await res.json();
+      
+      if (data && (data.pickup || data.dropoff || data.vehicleType)) {
+        const params = new URLSearchParams();
+        if (data.pickup) params.set("pickup", data.pickup);
+        if (data.dropoff) params.set("dropoff", data.dropoff);
+        if (data.vehicleType) params.set("vehicle", data.vehicleType);
+        
+        router.push(`/book?${params.toString()}`);
+      } else {
+        router.push("/book");
+      }
+    } catch (err) {
+      console.error(err);
+      router.push("/book");
+    } finally {
+      setAiLoading(false);
+    }
   };
 
   return (
@@ -84,6 +122,34 @@ export default function HeroSection({
             initial={{ opacity: 0, y: 14 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.4 }}
+            className="mt-10 w-full max-w-lg relative z-20"
+          >
+            <form onSubmit={handleAIBooking} className="relative flex items-center w-full">
+              <div className="absolute left-4 text-sky-400">
+                <Sparkles size={18} />
+              </div>
+              <input 
+                type="text" 
+                disabled={aiLoading}
+                value={aiQuery}
+                onChange={(e) => setAiQuery(e.target.value)}
+                placeholder="AI: Try 'Book a bike from Airport to Downtown'" 
+                className="w-full bg-white/5 border border-white/10 rounded-full py-4 pl-12 pr-16 text-sm text-white placeholder-slate-400 backdrop-blur-xl focus:outline-none focus:border-sky-500/50 focus:ring-1 focus:ring-sky-500/50 transition-all disabled:opacity-50 shadow-2xl"
+              />
+              <button 
+                disabled={aiLoading || !aiQuery.trim()}
+                type="submit" 
+                className="absolute right-2 bg-sky-500 text-white rounded-full p-2.5 hover:bg-sky-400 transition-colors disabled:opacity-50"
+              >
+                {aiLoading ? <Loader2 className="animate-spin w-4 h-4" /> : <ArrowRight size={16} />}
+              </button>
+            </form>
+          </motion.div>
+
+          <motion.div
+            initial={{ opacity: 0, y: 14 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.5 }}
             className="mt-10 flex flex-wrap items-center gap-4"
           >
             <motion.button

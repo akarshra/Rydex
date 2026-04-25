@@ -4,7 +4,7 @@ import { motion } from "framer-motion";
 import {
   Bike, Car, Truck, Zap,
   IndianRupee, Clock, Gauge,
-  ArrowRight, Star
+  ArrowRight, Star, TrendingUp
 } from "lucide-react";
 
 interface VehicleProps {
@@ -19,6 +19,7 @@ interface VehicleProps {
     waitingCharge?: number;
   };
   distanceKm?: number;
+  surgeFactor?: number;
   isRecommended?: boolean;
   onBook?: () => void;
 }
@@ -32,7 +33,7 @@ const TYPE_CONFIG = {
 };
 
 export default function VehicleBookingCard({
-  vehicle, distanceKm = 0, isRecommended, onBook,
+  vehicle, distanceKm = 0, surgeFactor = 1, isRecommended, onBook,
 }: VehicleProps) {
   const {
     type, vehicleModel, number,
@@ -40,7 +41,7 @@ export default function VehicleBookingCard({
   } = vehicle;
 
   const { label, Icon } = TYPE_CONFIG[type] ?? TYPE_CONFIG.car;
-  const estimated = Math.round(baseFare + distanceKm * pricePerKm);
+  const estimated = Math.round((baseFare + distanceKm * pricePerKm) * surgeFactor);
 
   return (
     <motion.div
@@ -163,6 +164,12 @@ export default function VehicleBookingCard({
               <span className="text-zinc-900 text-3xl font-black tracking-tight leading-none">
                 {estimated}
               </span>
+              {surgeFactor > 1 && (
+                <div className="flex items-center gap-0.5 ml-1 text-rose-500 bg-rose-50 px-1.5 py-0.5 rounded text-[10px] font-bold">
+                  <TrendingUp size={10} />
+                  <span>Surge {surgeFactor}x</span>
+                </div>
+              )}
             </motion.div>
           </div>
 
