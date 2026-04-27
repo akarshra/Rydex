@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { GoogleGenAI, Type, Schema } from "@google/genai";
+import { queryRAG } from "@/lib/rag";
 
 export async function POST(req: Request) {
   try {
@@ -9,13 +10,25 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Prompt is required" }, { status: 400 });
     }
 
+    let ragContext = "";
+
+    try {
+      // 1. Query RAG system for booking-related context
+      const ragResponse = await queryRAG(prompt, 2);
+      ragContext = ragResponse.context;
+    } catch (ragError) {
+      console.warn("RAG query failed for booking extraction:", ragError);
+    }
+
     const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
 
-    const systemInstruction = `You are a helpful AI assistant for Rydex, a ride-sharing app. 
-Extract booking details from the user's natural language request. 
-Return ONLY JSON matching the provided schema. 
+    const systemInstruction = `You are a helpful AI assistant for Rydex, a ride-sharing app.
+Extract booking details from the user's natural language request.
+Return ONLY JSON matching the provided schema.
 If a location is not explicitly mentioned but implied (e.g. "take me home"), try to extract it, or leave it null.
-Vehicle type should be one of: 'car', 'bike', 'auto', 'truck'. If not specified, default to 'car'.`;
+Vehicle type should be one of: 'car', 'bike', 'auto', 'truck'. If not specified, default to 'car'.
+
+${ragContext ? `Use this context for reference:\n${ragContext}` : ""}`;
 
     const responseSchema: Schema = {
       type: Type.OBJECT,

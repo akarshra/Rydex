@@ -34,6 +34,9 @@ export default function HeroSection({
 
   const [aiQuery, setAiQuery] = useState("");
   const [aiLoading, setAiLoading] = useState(false);
+  const [quickSearchPickup, setQuickSearchPickup] = useState("");
+  const [quickSearchDropoff, setQuickSearchDropoff] = useState("");
+  const [selectedVehicle, setSelectedVehicle] = useState<string | null>(null);
 
   const handleAIBooking = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -51,13 +54,13 @@ export default function HeroSection({
         body: JSON.stringify({ prompt: aiQuery })
       });
       const data = await res.json();
-      
+
       if (data && (data.pickup || data.dropoff || data.vehicleType)) {
         const params = new URLSearchParams();
         if (data.pickup) params.set("pickup", data.pickup);
         if (data.dropoff) params.set("dropoff", data.dropoff);
         if (data.vehicleType) params.set("vehicle", data.vehicleType);
-        
+
         router.push(`/book?${params.toString()}`);
       } else {
         router.push("/book");
@@ -68,6 +71,24 @@ export default function HeroSection({
     } finally {
       setAiLoading(false);
     }
+  };
+
+  const handleQuickSearch = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!userData) {
+      onAuthRequired();
+      return;
+    }
+    if (!quickSearchPickup.trim() || !quickSearchDropoff.trim()) return;
+
+    const params = new URLSearchParams();
+    params.set("pickup", quickSearchPickup);
+    params.set("dropoff", quickSearchDropoff);
+    if (selectedVehicle) {
+      params.set("vehicle", selectedVehicle);
+    }
+
+    router.push(`/search?${params.toString()}`);
   };
 
   return (
@@ -184,45 +205,59 @@ export default function HeroSection({
             <h3 className="text-xl font-bold text-white mb-6 flex items-center gap-2">
               <Navigation size={20} className="text-sky-400" /> Quick Search
             </h3>
-            
-            <div className="space-y-4">
+
+            <form onSubmit={handleQuickSearch} className="space-y-4">
               <div className="relative">
                 <div className="absolute left-4 top-1/2 -translate-y-1/2 w-2 h-2 rounded-full bg-emerald-400" />
-                <input 
-                  type="text" 
-                  placeholder="Enter pickup location" 
+                <input
+                  type="text"
+                  placeholder="Enter pickup location"
+                  value={quickSearchPickup}
+                  onChange={(e) => setQuickSearchPickup(e.target.value)}
                   className="w-full bg-slate-950/50 border border-white/5 rounded-xl py-3.5 pl-10 pr-4 text-sm text-white placeholder:text-slate-500 focus:outline-none focus:border-sky-500/50 transition-colors"
                 />
               </div>
               <div className="relative">
                 <div className="absolute left-4 top-1/2 -translate-y-1/2 w-2 h-2 rounded-sm bg-sky-400" />
-                <input 
-                  type="text" 
-                  placeholder="Where to?" 
+                <input
+                  type="text"
+                  placeholder="Where to?"
+                  value={quickSearchDropoff}
+                  onChange={(e) => setQuickSearchDropoff(e.target.value)}
                   className="w-full bg-slate-950/50 border border-white/5 rounded-xl py-3.5 pl-10 pr-4 text-sm text-white placeholder:text-slate-500 focus:outline-none focus:border-sky-500/50 transition-colors"
                 />
               </div>
-              
+
               <div className="grid grid-cols-3 gap-2 pt-2">
                 {[
-                  { icon: Car, label: "Car" },
-                  { icon: Bike, label: "Bike" },
-                  { icon: Truck, label: "Truck" },
-                ].map((vehicle, i) => (
-                  <button key={i} className="flex flex-col items-center justify-center gap-1.5 p-3 rounded-xl border border-white/5 bg-white/5 hover:bg-sky-500/10 hover:border-sky-500/30 transition-all text-slate-400 hover:text-sky-300">
+                  { icon: Car, label: "car" },
+                  { icon: Bike, label: "bike" },
+                  { icon: Truck, label: "truck" },
+                ].map((vehicle) => (
+                  <button
+                    key={vehicle.label}
+                    type="button"
+                    onClick={() => setSelectedVehicle(selectedVehicle === vehicle.label ? null : vehicle.label)}
+                    className={`flex flex-col items-center justify-center gap-1.5 p-3 rounded-xl border transition-all ${
+                      selectedVehicle === vehicle.label
+                        ? "border-sky-500/50 bg-sky-500/10 text-sky-300"
+                        : "border-white/5 bg-white/5 text-slate-400 hover:bg-sky-500/10 hover:border-sky-500/30 hover:text-sky-300"
+                    }`}
+                  >
                     <vehicle.icon size={20} />
                     <span className="text-[10px] font-semibold uppercase">{vehicle.label}</span>
                   </button>
                 ))}
               </div>
 
-              <button 
-                onClick={handleBookNow}
-                className="w-full mt-4 bg-gradient-to-r from-sky-500 to-indigo-500 text-white font-bold py-4 rounded-xl flex items-center justify-center gap-2 shadow-[0_10px_30px_rgba(14,165,233,0.3)] hover:shadow-[0_15px_40px_rgba(14,165,233,0.5)] transition-all hover:-translate-y-1"
+              <button
+                type="submit"
+                disabled={!quickSearchPickup.trim() || !quickSearchDropoff.trim()}
+                className="w-full mt-4 bg-gradient-to-r from-sky-500 to-indigo-500 text-white font-bold py-4 rounded-xl flex items-center justify-center gap-2 shadow-[0_10px_30px_rgba(14,165,233,0.3)] hover:shadow-[0_15px_40px_rgba(14,165,233,0.5)] transition-all hover:-translate-y-1 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 Find Vehicles <Search size={18} />
               </button>
-            </div>
+            </form>
           </div>
         </motion.div>
 

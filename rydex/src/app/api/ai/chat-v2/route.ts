@@ -1,19 +1,6 @@
 import { NextResponse } from "next/server";
 import { GoogleGenAI } from "@google/genai";
-import knowledgeBase from "@/data/knowledge_base.json";
-
-// Cosine similarity function
-function cosineSimilarity(vecA: number[], vecB: number[]) {
-  let dotProduct = 0;
-  let normA = 0;
-  let normB = 0;
-  for (let i = 0; i < vecA.length; i++) {
-    dotProduct += vecA[i] * vecB[i];
-    normA += vecA[i] * vecA[i];
-    normB += vecB[i] * vecB[i];
-  }
-  return dotProduct / (Math.sqrt(normA) * Math.sqrt(normB));
-}
+import { queryRAG } from "@/lib/rag";
 
 /**
  * Phase 4.4: Enhanced AI Customer Support with Multi-Language
@@ -101,22 +88,13 @@ export async function POST(req: Request) {
     // 3. Check escalation
     const escalate = shouldEscalateToHuman(intent, message);
 
-    // 4. Embed the user's message for RAG
-    const embedResponse = await ai.models.embedContent({
-      model: "gemini-embedding-2",
-      contents: message,
-    });
-    const queryEmbedding = embedResponse.embeddings?.[0]?.values;
-
+    // 4. Query RAG system for context
     let contextStr = "";
-    if (queryEmbedding) {
-      const scoredDocs = knowledgeBase.map((doc: any) => ({
-        ...doc,
-        score: cosineSimilarity(queryEmbedding, doc.embedding),
-      }));
-      scoredDocs.sort((a: any, b: any) => b.score - a.score);
-      const topDocs = scoredDocs.slice(0, 3);
-      contextStr = topDocs.map((doc: any) => `Q: ${doc.question}\nA: ${doc.answer}`).join("\n\n");
+    try {
+      const ragResponse = await queryRAG(message, 3);
+      contextStr = ragResponse.context;
+    } catch (ragError) {
+      console.warn("RAG query failed in chat-v2:", ragError);
     }
 
     // 5. Intent-specific system prompts
@@ -180,4 +158,3 @@ Guidelines:
     return NextResponse.json({ error: error.message || "Failed to process request" }, { status: 500 });
   }
 }
-

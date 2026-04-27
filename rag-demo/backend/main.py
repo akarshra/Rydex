@@ -2,7 +2,7 @@ from fastapi import FastAPI, UploadFile, File, HTTPException
 from pydantic import BaseModel
 import os
 import shutil
-from typing import List
+from typing import List, Optional
 
 from langchain_community.document_loaders import PyPDFLoader, TextLoader
 from langchain_text_splitters import RecursiveCharacterTextSplitter
@@ -27,6 +27,10 @@ vector_store = Chroma(
 
 class QueryRequest(BaseModel):
     query: str
+    top_k: int = 3
+
+class ChatRequest(BaseModel):
+    question: str
     top_k: int = 3
 
 @app.post("/upload")
@@ -76,6 +80,35 @@ async def query_documents(request: QueryRequest):
         })
         
     return {"query": request.query, "results": formatted_results}
+
+@app.post("/chat")
+async def chat(request: ChatRequest):
+    """
+    Chat endpoint that retrieves context from vector store.
+    Returns relevant documents as context that can be used with an LLM.
+    """
+    try:
+        results = vector_store.similarity_search_with_score(request.question, k=request.top_k)
+
+        formatted_results = []
+        context_text = ""
+
+        for doc, score in results:
+            formatted_results.append({
+                "content": doc.page_content,
+                "metadata": doc.metadata,
+                "score": float(score)
+            })
+            context_text += f"{doc.page_content}\n\n"
+
+        return {
+            "question": request.question,
+            "context": context_text.strip(),
+            "sources": formatted_results,
+            "source_count": len(formatted_results)
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
 
 @app.get("/health")
 def health_check():
