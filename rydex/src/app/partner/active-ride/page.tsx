@@ -255,7 +255,7 @@ export default function DriverRidePage() {
         className="text-center"
       >
         <h1 className="text-white text-2xl font-black mb-2">No Active Ride</h1>
-        <p className="text-zinc-500 text-sm mb-8 max-w-xs">You don't have any active booking right now. Go online to start receiving ride requests.</p>
+        <p className="text-zinc-500 text-sm mb-8 max-w-xs">You don&apos;t have any active booking right now. Go online to start receiving ride requests.</p>
         <motion.button
           whileTap={{ scale: 0.97 }}
           onClick={() => window.location.href = "/partner"}
@@ -437,7 +437,7 @@ function ActionBar({
             onClick={async () => { await sendPickupOtp(); setOtpMode(true); }}
             className="w-full bg-zinc-900 hover:bg-zinc-800 active:scale-[0.97] text-white py-4 rounded-2xl font-bold text-sm tracking-wide transition-all flex items-center justify-center gap-2"
           >
-            <MapPin size={16} /> I've Arrived at Pickup <ArrowRight size={15} className="ml-1" />
+            <MapPin size={16} /> I&apos;ve Arrived at Pickup <ArrowRight size={15} className="ml-1" />
           </motion.button>
         )}
 

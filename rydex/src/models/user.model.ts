@@ -58,6 +58,10 @@ socketId:string | null
   totalReviews?: number;
   rewardPoints?: number;
 
+  referralCode?: string;
+  referredBy?: mongoose.Types.ObjectId;
+  enterpriseId?: mongoose.Types.ObjectId;
+
   createdAt: Date;
   updatedAt: Date;
 }

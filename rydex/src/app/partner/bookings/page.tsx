@@ -221,7 +221,7 @@ export default function PartnerBookingsPage() {
             <div className="bg-white rounded-xl shadow-sm p-12 text-center">
               <Car className="w-12 h-12 text-gray-300 mx-auto mb-3" />
               <h3 className="text-lg font-medium text-gray-900">No bookings yet</h3>
-              <p className="text-gray-500 text-sm mt-1">When customers book rides, they'll appear here</p>
+              <p className="text-gray-500 text-sm mt-1">When customers book rides, they&apos;ll appear here</p>
             </div>
           )}
 

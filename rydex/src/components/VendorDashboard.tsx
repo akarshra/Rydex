@@ -86,7 +86,7 @@ export default function VendorDashboard({
   };
 
   const getActiveStep = () => {
-    let step = vendorStep + 1;
+    const step = vendorStep + 1;
 
     if (step > 5 && userData?.videoKycStatus !== "approved") {
       return 5;
@@ -233,7 +233,7 @@ export default function VendorDashboard({
               <div className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
               STATUS: ONLINE
             </div>
-            <h2 className="text-4xl font-black mb-3">🚀 You're Live!</h2>
+            <h2 className="text-4xl font-black mb-3">🚀 You&apos;re Live!</h2>
             <p className="text-slate-300 mb-8 max-w-lg">Your profile is active. You will now receive ride requests in your dashboard. Stay online to maximize earnings.</p>
 
             <button

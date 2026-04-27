@@ -174,7 +174,7 @@ const handleReject = async () => {
         ? "Admin"
         : `${userData?.name} (${userData?.email})`;
 
-      const userId = userData?._id.toString()!;
+      const userId = userData?._id?.toString() || "unknown";
 
       const kitToken =
         ZegoUIKitPrebuilt.generateKitTokenForTest(

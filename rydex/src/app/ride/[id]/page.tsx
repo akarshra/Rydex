@@ -454,7 +454,7 @@ function CompletedScreen({ booking, router }: { booking: BookingDetails; router:
           className="w-full max-w-sm"
         >
           <p className="text-zinc-400 text-xs uppercase tracking-[0.25em] font-semibold text-center mb-2">Trip Complete</p>
-          <h1 className="text-white text-3xl font-black text-center mb-1">You've Arrived!</h1>
+          <h1 className="text-white text-3xl font-black text-center mb-1">You&apos;ve Arrived!</h1>
           <p className="text-zinc-500 text-sm text-center mb-6">Thank you for riding with us.</p>
 
           {/* Points earned */}
