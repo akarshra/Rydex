@@ -26,9 +26,7 @@ export default function Nav() {
         <div className="mx-auto max-w-6xl px-4 py-3 flex items-center justify-between">
           <Link href="/" className="flex items-center gap-3">
             <Image src="/logo.png" alt="Rydex" width={36} height={36} />
-            <span className="font-semibold tracking-tight text-[var(--text)]">
-              Rydex
-            </span>
+            <span className="font-semibold tracking-tight text-[var(--text)]">Rydex</span>
           </Link>
 
           <nav className="flex-1 flex items-center justify-center gap-8">
@@ -58,7 +56,10 @@ export default function Nav() {
         </div>
       </header>
 
-      <AuthModal open={authOpen} onClose={() => setAuthOpen(false)} />
+      <AuthModal
+        open={authOpen}
+        onClose={() => setAuthOpen(false)}
+      />
     </>
   );
 }
