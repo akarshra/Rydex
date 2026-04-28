@@ -3,9 +3,11 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useState, useEffect } from "react";
+import AuthModal from "@/components/AuthModal";
 
 export default function Nav() {
   const [scrolled, setScrolled] = useState(false);
+  const [authOpen, setAuthOpen] = useState(false);
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 30);
@@ -27,11 +29,37 @@ export default function Nav() {
             <span className="font-semibold tracking-tight text-[var(--text)]">Rydex</span>
           </Link>
 
-          <div className="flex-1" />
+          <nav className="flex-1 flex items-center justify-center gap-8">
+            <Link href="/" className="text-sm font-medium text-[var(--text)] hover:text-[var(--text-secondary)] transition">
+              Home
+            </Link>
+            <Link href="/bookings" className="text-sm font-medium text-[var(--text)] hover:text-[var(--text-secondary)] transition">
+              Booking
+            </Link>
+            <Link href="/fleet" className="text-sm font-medium text-[var(--text)] hover:text-[var(--text-secondary)] transition">
+              Fleet
+            </Link>
+            <Link href="/faq" className="text-sm font-medium text-[var(--text)] hover:text-[var(--text-secondary)] transition">
+              FAQ
+            </Link>
+            <Link href="/contact" className="text-sm font-medium text-[var(--text)] hover:text-[var(--text-secondary)] transition">
+              Contact
+            </Link>
+          </nav>
+
+          <button
+            onClick={() => setAuthOpen(true)}
+            className="px-4 py-2 rounded-lg bg-white text-black text-sm font-semibold hover:bg-white/90 transition"
+          >
+            Sign in
+          </button>
         </div>
       </header>
 
-
+      <AuthModal
+        open={authOpen}
+        onClose={() => setAuthOpen(false)}
+      />
     </>
   );
 }
