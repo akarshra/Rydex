@@ -1,0 +1,30 @@
+{
+  "version": 2,
+  "builds": [
+    {
+      "src": "package.json",
+      "use": "@vercel/next"
+    }
+  ],
+  "functions": {
+    "src/app/api/**/*.ts": {
+      "runtime": "nodejs18.x"
+    }
+  },
+  "env": {
+    "NEXT_PUBLIC_BACKEND_URL": "@next_public_backend_url",
+    "NEXT_PUBLIC_APP_URL": "@next_public_app_url",
+    "NEXTAUTH_URL": "@nextauth_url",
+    "MONGODB_URL": "@mongodb_url",
+    "NEXT_PUBLIC_SOCKET_URL": "@next_public_socket_url",
+    "NEXTAUTH_SECRET": "@nextauth_secret",
+    "JWT_SECRET": "@jwt_secret",
+    "STRIPE_PUBLISHABLE_KEY": "@stripe_publishable_key",
+    "STRIPE_SECRET_KEY": "@stripe_secret_key",
+    "CLOUDINARY_CLOUD_NAME": "@cloudinary_cloud_name",
+    "CLOUDINARY_API_KEY": "@cloudinary_api_key",
+    "CLOUDINARY_API_SECRET": "@cloudinary_api_secret",
+    "OPENAI_API_KEY": "@openai_api_key",
+    "GOOGLE_AI_API_KEY": "@google_ai_api_key"
+  }
+}

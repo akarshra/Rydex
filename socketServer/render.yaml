@@ -1,0 +1,15 @@
+services:
+  - type: web
+    name: rydex-socketserver
+    runtime: node
+    buildCommand: npm install
+    startCommand: npm start
+    envVars:
+      - key: MONGODB_URL
+        value: [MONGODB_URL]
+      - key: REDIS_URL
+        value: [REDIS_URL]
+      - key: NEXT_BASE_URL
+        value: [FRONTEND_URL]
+      - key: PORT
+        value: 10000
