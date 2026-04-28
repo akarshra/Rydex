@@ -26,14 +26,14 @@ spring:
 
 app:
   jwt:
-    secret: ${JWT_SECRET:change-me-change-me-change-me-change-me}
+    secret: ${JWT_SECRET}
     issuer: rydex
     expiration-minutes: 1440
 
   stripe:
-    secret-key: ${STRIPE_SECRET_KEY:}
+    secret-key: ${STRIPE_SECRET_KEY}
 
   supabase:
-    url: ${SUPABASE_URL:https://qrcskffvukkyzwglgrzy.supabase.co}
+    url: ${SUPABASE_URL}
     service-key: ${SUPABASE_SERVICE_KEY}
-    storage-bucket: ${SUPABASE_STORAGE_BUCKET:kyc-documents}
+    storage-bucket: ${SUPABASE_STORAGE_BUCKET}
