@@ -9,6 +9,7 @@ import {
 import { useRouter } from "next/navigation";
 import { useState, useEffect } from "react";
 import { Calendar, Home, Briefcase, Plus, X, Wind, Music, VolumeX, Luggage, Baby, Dog } from "lucide-react";
+import { SurgePredictor } from "@/components/SurgePredictor";
 
 type Place = {
   id: string; name: string; city?: string; state?: string;
@@ -681,6 +682,28 @@ export default function BookPage() {
                 )}
               </AnimatePresence>
             </motion.div>
+
+            {/* DIVIDER */}
+            <div className="h-px bg-zinc-100" />
+
+            {/* ══ SURGE PREDICTOR ══ */}
+            {pickup && drop && pickupLat && pickupLng && dropLat && dropLng && (
+              <motion.div 
+                variants={stepVariants} 
+                initial="hidden" 
+                animate="visible" 
+                transition={{ delay: 0.28 }}
+              >
+                <SurgePredictor
+                  startLocation={pickup}
+                  endLocation={drop}
+                  startCoords={{ lat: pickupLat, lng: pickupLng }}
+                  endCoords={{ lat: dropLat, lng: dropLng }}
+                  basePrice={250}
+                  currentSurge={1.2}
+                />
+              </motion.div>
+            )}
 
             {/* DIVIDER */}
             <div className="h-px bg-zinc-100" />

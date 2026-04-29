@@ -39,6 +39,9 @@ export default function Nav() {
             <Link href="/fleet" className="text-sm font-medium text-[var(--text)] hover:text-[var(--text-secondary)] transition">
               Fleet
             </Link>
+            <Link href="/rydex-black" className="text-sm font-medium text-amber-600 hover:text-amber-700 transition font-bold flex items-center gap-1">
+              👑 Rydex Black
+            </Link>
             <Link href="/faq" className="text-sm font-medium text-[var(--text)] hover:text-[var(--text-secondary)] transition">
               FAQ
             </Link>

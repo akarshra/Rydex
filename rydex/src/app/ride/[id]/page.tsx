@@ -5,13 +5,15 @@ import {
   Phone, Car, User2, ChevronUp,
   Star, MessageCircle, Clock, Zap,
   IndianRupee, XCircle, AlertCircle,
-  CheckCircle2, ShieldAlert
+  CheckCircle2, ShieldAlert, Navigation, TrendingDown
 } from "lucide-react";
 import { getSocket } from "@/lib/socket";
 import { useParams, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import RideChat from "@/components/RideChat";
+import { ARPickupNav } from "@/components/ARPickupNav";
+import { SurgePredictor } from "@/components/SurgePredictor";
 
 const LiveRideMap = dynamic(() => import("@/components/LiveTrackingMap"), { ssr: false });
 
@@ -87,6 +89,10 @@ export default function RidePage() {
   const [sosType,          setSosType]          = useState("");
   const [isSosSubmitting,  setIsSosSubmitting]  = useState(false);
   const [sosSuccess,       setSosSuccess]       = useState(false);
+
+  /* AR Navigation State */
+  const [arNavigationOpen, setArNavigationOpen] = useState(false);
+  const [showSurgePredictor, setShowSurgePredictor] = useState(false);
 
   /* ── FETCH ── */
 
@@ -223,6 +229,8 @@ export default function RidePage() {
     chatOpen, onChatToggle: () => canChat && setChatOpen(v => !v),
     onCancel: handleCancel, onRetryPayment: fetchBooking, router,
     onSosTrigger: () => setSosModalOpen(true),
+    onARToggle: () => setArNavigationOpen(v => !v),
+    arNavigationOpen,
   };
 
   return (
@@ -368,6 +376,26 @@ export default function RidePage() {
               </div>
             </motion.div>
           </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* ══ AR NAVIGATION ══ */}
+      <AnimatePresence>
+        {arNavigationOpen && driverPos && pickupPos && (
+          <ARPickupNav
+            bookingId={id as string}
+            onClose={() => setArNavigationOpen(false)}
+            driverLocation={{
+              lat: driverPos[0],
+              lng: driverPos[1],
+              heading: 0,
+            }}
+            userLocation={{
+              lat: pickupPos[0],
+              lng: pickupPos[1],
+              heading: 0,
+            }}
+          />
         )}
       </AnimatePresence>
       </div>
@@ -664,7 +692,7 @@ function FailedScreen({ booking, status, cfg, router }: { booking: BookingDetail
 function PanelContent({
   booking, status, cfg, isActive, canChat, showDriver,
   displayEta, displayDistance,
-  chatOpen, onChatToggle, onCancel, onRetryPayment, router, onSosTrigger
+  chatOpen, onChatToggle, onCancel, onRetryPayment, router, onSosTrigger, onARToggle, arNavigationOpen
 }: any) {
   return (
     <div className="flex flex-col pt-5 pb-6 gap-3">
@@ -841,6 +869,23 @@ function PanelContent({
               <p className="text-white text-xs font-black tracking-widest font-mono">{booking.vehicle.number}</p>
             </div>
           </div>
+        </div>
+      )}
+
+      {/* AR NAVIGATION BUTTON */}
+      {isActive && status === "confirmed" && (
+        <div className="mx-5 lg:mx-6 pb-2">
+          <button 
+            onClick={onARToggle} 
+            className={`w-full py-3.5 rounded-2xl text-sm font-bold transition-colors flex items-center justify-center gap-2 ${
+              arNavigationOpen 
+                ? "bg-blue-500 text-white border border-blue-600" 
+                : "bg-blue-500/10 text-blue-500 border border-blue-500/20 hover:bg-blue-500/20"
+            }`}
+          >
+            <Navigation size={18} />
+            {arNavigationOpen ? "Close AR Navigation" : "AR Pickup Navigation"}
+          </button>
         </div>
       )}
 
